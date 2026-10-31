@@ -1,7 +1,8 @@
 "use client";
 
 import React from "react";
-import Image from "next/image";
+import Link from "next/link";
+import { Aperture } from "lucide-react";
 
 const Footer = () => {
     const handleSubscribe = (e: React.FormEvent<HTMLFormElement>) => {
@@ -16,19 +17,22 @@ const Footer = () => {
 
                     {/* Brand */}
                     <div>
-                        <a
-                            href="#top"
-                            className="inline-flex items-center gap-2 text-xl font-bold tracking-tight text-gray-900 transition-colors hover:text-lime-500 dark:text-white"
+                        {/* Logo */}
+                        <Link
+                            href="/"
+                            className="group flex shrink-0 items-center gap-2.5"
+                            aria-label="StudioSpace home"
                         >
-                            {/* <Image
-                                src="img.png"
-                                alt="StudioSpace Logo"
-                                width={180}
-                                height={180}
-                                priority
-                                className="h-auto w-40 object-contain"
-                            /> */}
-                        </a>
+                            <span className="flex size-9 items-center justify-center rounded-xl bg-linear-to-br from-teal-600 to-blue-600 shadow-md shadow-blue-600/20 transition-transform duration-300 group-hover:rotate-[15deg] group-hover:scale-105 dark:from-sky-500 dark:to-blue-600">
+                                <Aperture className="size-5 text-white" strokeWidth={2.25} />
+                            </span>
+                            <span className="text-xl font-bold tracking-tight">
+                                <span className="bg-linear-to-r from-teal-700 to-blue-600 bg-clip-text text-transparent dark:from-sky-400 dark:to-blue-400">
+                                    Studio
+                                </span>
+                                <span className="text-gray-900 dark:text-white">Space</span>
+                            </span>
+                        </Link>
 
                         <p className="mt-4 max-w-xs text-sm leading-7">
                             Our mission is to put great creative spaces within
@@ -80,24 +84,24 @@ const Footer = () => {
 
                         <ul className="space-y-3 text-sm">
                             <li>
-                                <a href="#featured" className="transition-colors hover:text-lime-500">
+                                <Link href="/#featured" className="transition-colors hover:text-lime-500">
                                     Explore Studios
-                                </a>
+                                </Link>
                             </li>
                             <li>
-                                <a href="#how" className="transition-colors hover:text-lime-500">
+                                <Link href="/#how" className="transition-colors hover:text-lime-500">
                                     How It Works
-                                </a>
+                                </Link>
                             </li>
                             <li>
-                                <a href="#" className="transition-colors hover:text-lime-500">
+                                <Link href="/#trust" className="transition-colors hover:text-lime-500">
                                     Host Your Space
-                                </a>
+                                </Link>
                             </li>
                             <li>
-                                <a href="#trust" className="transition-colors hover:text-lime-500">
+                                <Link href="/#trust" className="transition-colors hover:text-lime-500">
                                     Host Guarantee
-                                </a>
+                                </Link>
                             </li>
                         </ul>
                     </div>
@@ -109,11 +113,11 @@ const Footer = () => {
                         </h4>
 
                         <ul className="space-y-3 text-sm">
-                            <li><a href="#" className="transition-colors hover:text-lime-500">Photography</a></li>
-                            <li><a href="#" className="transition-colors hover:text-lime-500">Film &amp; Sound</a></li>
-                            <li><a href="#" className="transition-colors hover:text-lime-500">Podcast Rooms</a></li>
-                            <li><a href="#" className="transition-colors hover:text-lime-500">Music Suites</a></li>
-                            <li><a href="#" className="transition-colors hover:text-lime-500">Art Workshops</a></li>
+                            <li><Link href="/#categories" className="transition-colors hover:text-lime-500">Photography</Link></li>
+                            <li><Link href="/#categories" className="transition-colors hover:text-lime-500">Film &amp; Sound</Link></li>
+                            <li><Link href="/#categories" className="transition-colors hover:text-lime-500">Podcast Rooms</Link></li>
+                            <li><Link href="/#categories" className="transition-colors hover:text-lime-500">Music Suites</Link></li>
+                            <li><Link href="/#categories" className="transition-colors hover:text-lime-500">Art Workshops</Link></li>
                         </ul>
                     </div>
 
