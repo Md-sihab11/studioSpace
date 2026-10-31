@@ -1,0 +1,4 @@
+step by step
+1. npx shadcn@latest add --all
+2. npx shadcn@latest init
+3. npx create-next-app@latest studiospace
