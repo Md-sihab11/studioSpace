@@ -2,11 +2,13 @@
 import { authClient } from '@/lib/auth-client';
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useToast } from '@/lib/use-toast';
 
 const RegisterPage = () => {
     const router = useRouter();
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
+    const { toast } = useToast();
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -31,10 +33,21 @@ const RegisterPage = () => {
         if (authError) {
             setError(authError.message || "Could not create account");
             setLoading(false);
+            toast({
+                title: "Registration failed",
+                description: authError.message || "Could not create account",
+                type: "error",
+            });
             return;
         }
 
-        router.push("/");
+        toast({
+            title: "Account created!",
+            description: "You can now log in to your account.",
+            type: "success",
+        });
+
+        router.push("/login");
     };
 
     return (
@@ -116,8 +129,9 @@ const RegisterPage = () => {
                             <input
                                 type="url"
                                 name="photoURL"
+                                required
                                 className="bg-transparent border-none outline-none w-full text-gray-900 dark:text-[#d3d3d3] placeholder:text-gray-500 dark:placeholder:text-gray-400"
-                                placeholder="Photo URL (optional)"
+                                placeholder="Photo URL"
                                 autoComplete="url"
                             />
                         </div>

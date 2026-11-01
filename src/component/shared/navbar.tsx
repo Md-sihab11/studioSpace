@@ -10,11 +10,14 @@ import {
     LogOut,
     Menu,
     Moon,
+    Plus,
     Sun,
     User,
     X,
 } from "lucide-react";
 import { cn } from "cn";
+import { useSession, authClient } from "@/lib/auth-client";
+import { useToast } from "@/lib/use-toast";
 
 type NavItem = {
     label: string;
@@ -25,22 +28,14 @@ type NavItem = {
 
 const NAV_LINKS: NavItem[] = [
     { label: "Home", href: "/" },
-    { label: "Studios", href: "/#featured", section: "featured" },
+    { label: "Studios", href: "/studios", section: "featured" },
     { label: "Categories", href: "/#categories", section: "categories" },
     { label: "How It Works", href: "/#how", section: "how" },
     // { label: "Host Your Space", href: "/#trust", section: "trust" },
-    { label: "About", href: "/#about", section: "about" },
+    { label: "About Us", href: "/#about", section: "about" },
 ];
 
-/** localStorage key used by the future auth layer to expose the signed-in user. */
-const USER_STORAGE_KEY = "studiospace_user";
 const THEME_STORAGE_KEY = "studiospace_theme";
-
-type SessionUser = {
-    name?: string;
-    email?: string;
-};
-
 
 const themeSubscribe = (onStoreChange: () => void) => {
     const observer = new MutationObserver(onStoreChange);
@@ -54,35 +49,6 @@ const themeSubscribe = (onStoreChange: () => void) => {
 const getThemeSnapshot = () => document.documentElement.classList.contains("dark");
 const getThemeServerSnapshot = () => false;
 
-const userListeners = new Set<() => void>();
-
-const notifyUserSubscribers = () => userListeners.forEach((listener) => listener());
-
-const userSubscribe = (onStoreChange: () => void) => {
-    userListeners.add(onStoreChange);
-
-    const onStorage = (event: StorageEvent) => {
-        if (event.key === USER_STORAGE_KEY) onStoreChange();
-    };
-    window.addEventListener("storage", onStorage);
-
-    return () => {
-        userListeners.delete(onStoreChange);
-        window.removeEventListener("storage", onStorage);
-    };
-};
-
-const getUserSnapshot = (): SessionUser | null => {
-    try {
-        const raw = window.localStorage.getItem(USER_STORAGE_KEY);
-        return raw ? (JSON.parse(raw) as SessionUser) : null;
-    } catch {
-        return null;
-    }
-};
-
-const getUserServerSnapshot = (): SessionUser | null => null;
-
 /* ------------------------------------------------------------------ */
 
 const Navbar = () => {
@@ -92,7 +58,9 @@ const Navbar = () => {
     const [mobileOpen, setMobileOpen] = useState(false);
     const [profileOpen, setProfileOpen] = useState(false);
     const isDark = useSyncExternalStore(themeSubscribe, getThemeSnapshot, getThemeServerSnapshot);
-    const user = useSyncExternalStore(userSubscribe, getUserSnapshot, getUserServerSnapshot);
+    const { data: session } = useSession();
+    const user = session?.user;
+    const { toast } = useToast();
     const profileRef = useRef<HTMLDivElement | null>(null);
 
     /* Shadow appears once the page is scrolled for a floating, premium feel. */
@@ -161,9 +129,13 @@ const Navbar = () => {
         window.localStorage.setItem(THEME_STORAGE_KEY, isDark ? "light" : "dark");
     };
 
-    const handleSignOut = () => {
-        window.localStorage.removeItem(USER_STORAGE_KEY);
-        notifyUserSubscribers();
+    const handleSignOut = async () => {
+        await authClient.signOut();
+        toast({
+            title: "Logged out",
+            description: "You have been successfully logged out.",
+            type: "info",
+        });
         setProfileOpen(false);
     };
 
@@ -290,18 +262,25 @@ const Navbar = () => {
                                         <LayoutDashboard className="size-4" /> Dashboard
                                     </Link>
                                     <Link
-                                        href="/my-bookings"
+                                        href="/add-studio"
                                         onClick={() => setProfileOpen(false)}
                                         className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/5"
                                     >
-                                        <User className="size-4" /> My Bookings
+                                        <Plus className="size-4" /> Add New Studio
                                     </Link>
                                     <Link
                                         href="/my-listings"
                                         onClick={() => setProfileOpen(false)}
                                         className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/5"
                                     >
-                                        <Aperture className="size-4" /> My Listings
+                                        <Aperture className="size-4" /> My Studio Listings
+                                    </Link>
+                                    <Link
+                                        href="/my-bookings"
+                                        onClick={() => setProfileOpen(false)}
+                                        className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm text-gray-700 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/5"
+                                    >
+                                        <User className="size-4" /> My Bookings
                                     </Link>
                                     <button
                                         type="button"
@@ -402,6 +381,27 @@ const Navbar = () => {
                                         className="rounded-full bg-gray-100 px-4 py-3 text-center text-sm font-semibold text-gray-900 dark:bg-white/10 dark:text-white"
                                     >
                                         Dashboard
+                                    </Link>
+                                    <Link
+                                        href="/add-studio"
+                                        onClick={() => setMobileOpen(false)}
+                                        className="rounded-full border border-teal-400 px-4 py-3 text-center text-sm font-semibold text-teal-600 dark:border-sky-400 dark:text-sky-400"
+                                    >
+                                        Add New Studio
+                                    </Link>
+                                    <Link
+                                        href="/my-listings"
+                                        onClick={() => setMobileOpen(false)}
+                                        className="rounded-full border border-gray-200 px-4 py-3 text-center text-sm font-semibold text-gray-800 dark:border-white/15 dark:text-white"
+                                    >
+                                        My Studio Listings
+                                    </Link>
+                                    <Link
+                                        href="/my-bookings"
+                                        onClick={() => setMobileOpen(false)}
+                                        className="rounded-full border border-gray-200 px-4 py-3 text-center text-sm font-semibold text-gray-800 dark:border-white/15 dark:text-white"
+                                    >
+                                        My Bookings
                                     </Link>
                                     <button
                                         type="button"

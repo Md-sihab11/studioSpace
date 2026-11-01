@@ -1,7 +1,17 @@
-import React from "react";
+"use client";
+
+import React, { useState, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Clock, MapPin, Star, Verified } from "lucide-react";
+import { ArrowRight, Clock, MapPin, Search, SlidersHorizontal, Star, Verified, X } from "lucide-react";
+import {
+    Empty,
+    EmptyContent,
+    EmptyDescription,
+    EmptyHeader,
+    EmptyMedia,
+    EmptyTitle,
+} from "@/components/ui/empty";
 
 type Studio = {
     id: string;
@@ -88,7 +98,36 @@ const FEATURED_STUDIOS: Studio[] = [
     },
 ];
 
+const ALL_CATEGORIES = ["All", ...Array.from(new Set(FEATURED_STUDIOS.map((s) => s.category)))];
+
+/* ------------------------------------------------------------------ */
+
 const FeaturedStudios = () => {
+    const [query, setQuery] = useState("");
+    const [activeCategory, setActiveCategory] = useState("All");
+
+    const filtered = useMemo(() => {
+        const q = query.trim().toLowerCase();
+        return FEATURED_STUDIOS.filter((studio) => {
+            const matchesCategory =
+                activeCategory === "All" || studio.category === activeCategory;
+            const matchesQuery =
+                !q ||
+                studio.name.toLowerCase().includes(q) ||
+                studio.location.toLowerCase().includes(q) ||
+                studio.category.toLowerCase().includes(q) ||
+                studio.features.some((f) => f.toLowerCase().includes(q));
+            return matchesCategory && matchesQuery;
+        });
+    }, [query, activeCategory]);
+
+    const clearSearch = () => {
+        setQuery("");
+        setActiveCategory("All");
+    };
+
+    const hasActiveFilter = query.trim() !== "" || activeCategory !== "All";
+
     return (
         <section id="featured" className="scroll-mt-24 bg-gray-50 py-16 dark:bg-[#0a0a0a] sm:py-20 lg:py-24">
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-10">
@@ -115,78 +154,189 @@ const FeaturedStudios = () => {
                     </Link>
                 </div>
 
-                {/* Studio grid */}
-                <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                    {FEATURED_STUDIOS.map((studio) => (
-                        <Link
-                            key={studio.id}
-                            href={`/studios/${studio.id}`}
-                            className="group flex flex-col overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-teal-300 hover:shadow-2xl hover:shadow-black/5 dark:border-white/10 dark:bg-[#131313] dark:hover:border-sky-500/40"
-                        >
-                            {/* Image */}
-                            <div className="relative h-56 w-full overflow-hidden">
-                                <Image
-                                    src={studio.image}
-                                    alt={studio.name}
-                                    fill
-                                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                                    className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
-                                />
-                                <div className="absolute inset-x-0 top-0 flex items-start justify-between p-4">
-                                    <span className="rounded-full bg-black/55 px-3 py-1 text-xs font-semibold text-white backdrop-blur-md">
-                                        {studio.category}
-                                    </span>
-                                    <span className="inline-flex items-center gap-1 rounded-full bg-[#B7F36B] px-2.5 py-1 text-xs font-bold text-black">
-                                        <Verified className="size-3" />
-                                        Verified
-                                    </span>
-                                </div>
-                                <div className="absolute right-4 bottom-4 inline-flex items-center gap-1 rounded-full bg-black/55 px-2.5 py-1 text-xs font-semibold text-white backdrop-blur-md">
-                                    <Star className="size-3 fill-[#B7F36B] text-[#B7F36B]" />
-                                    {studio.rating.toFixed(1)}
-                                    <span className="font-normal text-white/70">
-                                        ({studio.reviews})
-                                    </span>
-                                </div>
-                            </div>
+                {/* Search & Filter Bar */}
+                <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center">
+                    {/* Search input */}
+                    <div className="relative flex-1">
+                        <Search className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-gray-400 dark:text-gray-500" />
+                        <input
+                            id="studio-search"
+                            type="search"
+                            value={query}
+                            onChange={(e) => setQuery(e.target.value)}
+                            placeholder="Search by name, location or feature…"
+                            aria-label="Search studios"
+                            className="h-11 w-full rounded-full border border-gray-200 bg-white pl-10 pr-4 text-sm text-gray-900 shadow-sm placeholder:text-gray-400 outline-none transition-all focus:border-teal-400 focus:ring-2 focus:ring-teal-400/20 dark:border-white/10 dark:bg-[#131313] dark:text-white dark:placeholder:text-gray-500 dark:focus:border-sky-400 dark:focus:ring-sky-400/20"
+                        />
+                        {query && (
+                            <button
+                                type="button"
+                                aria-label="Clear search"
+                                onClick={() => setQuery("")}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
+                            >
+                                <X className="size-3.5" />
+                            </button>
+                        )}
+                    </div>
 
-                            {/* Body */}
-                            <div className="flex flex-1 flex-col p-5">
-                                <h3 className="text-lg font-bold text-gray-900 transition-colors group-hover:text-teal-700 dark:text-white dark:group-hover:text-sky-300">
-                                    {studio.name}
-                                </h3>
-                                <p className="mt-1.5 inline-flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400">
-                                    <MapPin className="size-3.5 shrink-0" />
-                                    {studio.location}
-                                </p>
-
-                                <div className="mt-3.5 flex flex-wrap gap-1.5">
-                                    {studio.features.map((feature) => (
-                                        <span
-                                            key={feature}
-                                            className="rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-600 dark:bg-white/5 dark:text-gray-300"
-                                        >
-                                            {feature}
-                                        </span>
-                                    ))}
-                                </div>
-
-                                <div className="mt-5 flex items-center justify-between border-t border-gray-100 pt-4 dark:border-white/10">
-                                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                                        <span className="text-lg font-bold text-gray-900 dark:text-white">
-                                            ${studio.pricePerHour}
-                                        </span>
-                                        /hour
-                                    </p>
-                                    <span className="inline-flex items-center gap-1 text-sm font-semibold text-teal-700 dark:text-sky-400">
-                                        <Clock className="size-3.5" />
-                                        Available today
-                                    </span>
-                                </div>
-                            </div>
-                        </Link>
-                    ))}
+                    {/* Category pills */}
+                    <div
+                        role="group"
+                        aria-label="Filter by category"
+                        className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0"
+                    >
+                        <SlidersHorizontal className="size-4 shrink-0 text-gray-400 dark:text-gray-500" />
+                        {ALL_CATEGORIES.map((cat) => (
+                            <button
+                                key={cat}
+                                type="button"
+                                onClick={() => setActiveCategory(cat)}
+                                aria-pressed={activeCategory === cat}
+                                className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all duration-200 ${
+                                    activeCategory === cat
+                                        ? "bg-teal-600 text-white shadow-sm shadow-teal-600/30 dark:bg-sky-500 dark:shadow-sky-500/30"
+                                        : "border border-gray-200 bg-white text-gray-600 hover:border-teal-300 hover:text-teal-700 dark:border-white/10 dark:bg-[#131313] dark:text-gray-400 dark:hover:border-sky-400 dark:hover:text-sky-300"
+                                }`}
+                            >
+                                {cat}
+                            </button>
+                        ))}
+                    </div>
                 </div>
+
+                {/* Results count */}
+                {hasActiveFilter && (
+                    <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">
+                        {filtered.length === 0
+                            ? "No studios found"
+                            : `${filtered.length} studio${filtered.length !== 1 ? "s" : ""} found`}
+                        {query.trim() && (
+                            <> for &ldquo;<span className="font-medium text-gray-700 dark:text-gray-200">{query.trim()}</span>&rdquo;</>
+                        )}
+                    </p>
+                )}
+
+                {/* Studio grid or empty state */}
+                {filtered.length > 0 ? (
+                    <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                        {filtered.map((studio) => (
+                            <Link
+                                key={studio.id}
+                                href={`/studios/${studio.id}`}
+                                className="group flex flex-col overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-teal-300 hover:shadow-2xl hover:shadow-black/5 dark:border-white/10 dark:bg-[#131313] dark:hover:border-sky-500/40"
+                            >
+                                {/* Image */}
+                                <div className="relative h-56 w-full overflow-hidden">
+                                    <Image
+                                        src={studio.image}
+                                        alt={studio.name}
+                                        fill
+                                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                                        className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+                                    />
+                                    <div className="absolute inset-x-0 top-0 flex items-start justify-between p-4">
+                                        <span className="rounded-full bg-black/55 px-3 py-1 text-xs font-semibold text-white backdrop-blur-md">
+                                            {studio.category}
+                                        </span>
+                                        <span className="inline-flex items-center gap-1 rounded-full bg-[#B7F36B] px-2.5 py-1 text-xs font-bold text-black">
+                                            <Verified className="size-3" />
+                                            Verified
+                                        </span>
+                                    </div>
+                                    <div className="absolute right-4 bottom-4 inline-flex items-center gap-1 rounded-full bg-black/55 px-2.5 py-1 text-xs font-semibold text-white backdrop-blur-md">
+                                        <Star className="size-3 fill-[#B7F36B] text-[#B7F36B]" />
+                                        {studio.rating.toFixed(1)}
+                                        <span className="font-normal text-white/70">
+                                            ({studio.reviews})
+                                        </span>
+                                    </div>
+                                </div>
+
+                                {/* Body */}
+                                <div className="flex flex-1 flex-col p-5">
+                                    <h3 className="text-lg font-bold text-gray-900 transition-colors group-hover:text-teal-700 dark:text-white dark:group-hover:text-sky-300">
+                                        {studio.name}
+                                    </h3>
+                                    <p className="mt-1.5 inline-flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400">
+                                        <MapPin className="size-3.5 shrink-0" />
+                                        {studio.location}
+                                    </p>
+
+                                    <div className="mt-3.5 flex flex-wrap gap-1.5">
+                                        {studio.features.map((feature) => (
+                                            <span
+                                                key={feature}
+                                                className="rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-600 dark:bg-white/5 dark:text-gray-300"
+                                            >
+                                                {feature}
+                                            </span>
+                                        ))}
+                                    </div>
+
+                                    <div className="mt-5 mb-5 flex items-center justify-between border-t border-gray-100 pt-4 dark:border-white/10">
+                                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                                            <span className="text-lg font-bold text-gray-900 dark:text-white">
+                                                ${studio.pricePerHour}
+                                            </span>
+                                            /hour
+                                        </p>
+                                        <span className="inline-flex items-center gap-1 text-sm font-semibold text-teal-700 dark:text-sky-400">
+                                            <Clock className="size-3.5" />
+                                            Available today
+                                        </span>
+                                    </div>
+                                    <Link
+                                        href="/#featured"
+                                        className="inline-flex items-center justify-center rounded-full bg-[#e63946] px-8 py-3.5 text-sm font-semibold text-white shadow-lg shadow-[#e63946]/30 transition-all duration-200 hover:bg-[#ff4757] hover:shadow-xl hover:shadow-[#e63946]/40 active:scale-[0.98]"
+                                    >
+                                        View Details
+                                    </Link>
+                                </div>
+                            </Link>
+                        ))}
+                    </div>
+                ) : (
+                    /* ── Empty State ── */
+                    <div className="mt-10">
+                        <Empty className="border border-dashed border-gray-200 bg-white py-20 dark:border-white/10 dark:bg-[#131313]">
+                            <EmptyHeader>
+                                <EmptyMedia>
+                                    <span className="flex size-20 items-center justify-center rounded-3xl bg-teal-50 text-teal-500 dark:bg-sky-500/10 dark:text-sky-400">
+                                        <Search className="size-9" strokeWidth={1.5} />
+                                    </span>
+                                </EmptyMedia>
+                                <EmptyTitle className="text-xl font-bold text-gray-900 dark:text-white">
+                                    No studios found
+                                </EmptyTitle>
+                                <EmptyDescription>
+                                    {query.trim()
+                                        ? <>We couldn&apos;t find any studios matching &ldquo;<strong className="font-semibold text-gray-700 dark:text-gray-200">{query.trim()}</strong>&rdquo;{activeCategory !== "All" ? ` in ${activeCategory}` : ""}. Try a different keyword or clear your filters.</>
+                                        : <>No studios available in the <strong className="font-semibold text-gray-700 dark:text-gray-200">{activeCategory}</strong> category right now. Check back soon or explore other categories.</>
+                                    }
+                                </EmptyDescription>
+                            </EmptyHeader>
+                            <EmptyContent>
+                                <button
+                                    id="clear-studio-search"
+                                    type="button"
+                                    onClick={clearSearch}
+                                    className="inline-flex items-center gap-2 rounded-full bg-teal-600 px-6 py-2.5 text-sm font-semibold text-white shadow-md shadow-teal-600/25 transition-all duration-200 hover:bg-teal-700 hover:shadow-lg active:scale-[0.98] dark:bg-sky-500 dark:shadow-sky-500/25 dark:hover:bg-sky-600"
+                                >
+                                    <X className="size-4" />
+                                    Clear filters
+                                </button>
+                                <Link
+                                    href="/#categories"
+                                    className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 transition-colors hover:text-teal-600 dark:text-gray-400 dark:hover:text-sky-400"
+                                >
+                                    Browse all categories
+                                    <ArrowRight className="size-3.5" />
+                                </Link>
+                            </EmptyContent>
+                        </Empty>
+                    </div>
+                )}
             </div>
         </section>
     );

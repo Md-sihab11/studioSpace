@@ -113,11 +113,11 @@ const Footer = () => {
                         </h4>
 
                         <ul className="space-y-3 text-sm">
-                            <li><Link href="/#categories" className="transition-colors hover:text-lime-500">Photography</Link></li>
-                            <li><Link href="/#categories" className="transition-colors hover:text-lime-500">Film &amp; Sound</Link></li>
-                            <li><Link href="/#categories" className="transition-colors hover:text-lime-500">Podcast Rooms</Link></li>
-                            <li><Link href="/#categories" className="transition-colors hover:text-lime-500">Music Suites</Link></li>
-                            <li><Link href="/#categories" className="transition-colors hover:text-lime-500">Art Workshops</Link></li>
+                            <li><Link href="/studios?category=photography" className="transition-colors hover:text-lime-500">Photography</Link></li>
+                            <li><Link href="/studios?category=film-sound" className="transition-colors hover:text-lime-500">Film &amp; Sound</Link></li>
+                            <li><Link href="/studios?category=podcast" className="transition-colors hover:text-lime-500">Podcast Rooms</Link></li>
+                            <li><Link href="/studios?category=music" className="transition-colors hover:text-lime-500">Music Suites</Link></li>
+                            <li><Link href="/studios?category=art" className="transition-colors hover:text-lime-500">Art Workshops</Link></li>
                         </ul>
                     </div>
 

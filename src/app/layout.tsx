@@ -4,6 +4,8 @@ import { Josefin_Sans } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/component/shared/navbar";
 import Footer from "@/component/shared/footer";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const Josefin = Josefin_Sans({
   subsets: ["latin"],
@@ -38,6 +40,17 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <Navbar />
         </Suspense>
         <div className="flex flex-1 flex-col">{children}</div>
+        <ToastContainer
+          position="top-center"
+          autoClose={3500}
+          hideProgressBar={false}
+          newestOnTop
+          closeOnClick
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="colored"
+        />
         <Footer />
       </body>
     </html>

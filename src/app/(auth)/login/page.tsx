@@ -2,11 +2,13 @@
 import { authClient } from '@/lib/auth-client';
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useToast } from '@/lib/use-toast';
 
 const LogInPage = () => {
     const router = useRouter();
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
+    const { toast } = useToast();
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -26,8 +28,19 @@ const LogInPage = () => {
         if (authError) {
             setError(authError.message || "Invalid email or password");
             setLoading(false);
+            toast({
+                title: "Login failed",
+                description: authError.message || "Invalid email or password",
+                type: "error",
+            });
             return;
         }
+
+        toast({
+            title: "Welcome back!",
+            description: "You have successfully logged in.",
+            type: "success",
+        });
 
         router.push("/");
     };
