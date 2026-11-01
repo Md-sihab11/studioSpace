@@ -2,6 +2,12 @@
 import React from 'react';
 
 const LogInPage = () => {
+
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        // Handle login logic here
+        
+    }
     return (
         <div className="min-h-screen flex items-center justify-center px-4 py-10 bg-gray-50 dark:bg-[#0a0a0a] transition-colors duration-300">
 

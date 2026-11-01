@@ -1,8 +1,7 @@
 import { betterAuth } from "better-auth";
-import { MongoClient } from "mongodb";
 import { mongodbAdapter } from "@better-auth/mongo-adapter";
+import { client } from "@/lib/db";
 
-const client = new MongoClient(process.env.MONGO_URL!);
 const db = client.db("studiospace");
 
 export const auth = betterAuth({
