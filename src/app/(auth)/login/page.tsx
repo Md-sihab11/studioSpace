@@ -1,13 +1,37 @@
-
-import React from 'react';
+'use client'
+import { authClient } from '@/lib/auth-client';
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 const LogInPage = () => {
+    const router = useRouter();
+    const [error, setError] = useState<string | null>(null);
+    const [loading, setLoading] = useState(false);
 
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        // Handle login logic here
-        
-    }
+        setError(null);
+        setLoading(true);
+
+        const formData = new FormData(e.currentTarget);
+        const user = Object.fromEntries(formData.entries()) as { email: string; password: string };
+
+        const { error: authError } = await authClient.signIn.email({
+            email: user.email,
+            password: user.password,
+            rememberMe: true,
+            callbackURL: "/",
+        });
+
+        if (authError) {
+            setError(authError.message || "Invalid email or password");
+            setLoading(false);
+            return;
+        }
+
+        router.push("/");
+    };
+
     return (
         <div className="min-h-screen flex items-center justify-center px-4 py-10 bg-gray-50 dark:bg-[#0a0a0a] transition-colors duration-300">
 
@@ -16,13 +40,20 @@ const LogInPage = () => {
                 <div className="rounded-none transition-all duration-200 hover:scale-[0.98] hover:rounded-[20px]">
 
                     <form
-                        
+                        onSubmit={handleSubmit}
                         className="flex flex-col gap-4 px-8 sm:px-10 py-6 bg-white dark:bg-[#171717] text-gray-900 dark:text-white rounded-[25px] transition-colors duration-300"
                     >
                         {/* Heading */}
                         <p className="text-center mt-6 mb-8 text-2xl font-semibold text-gray-900 dark:text-white">
                             Login
                         </p>
+
+                        {/* Error message */}
+                        {error && (
+                            <p className="text-center text-sm text-red-500 -mt-4 bg-red-50 dark:bg-red-950/40 rounded-md px-3 py-2">
+                                {error}
+                            </p>
+                        )}
 
                         {/* Email Field */}
                         <div className="flex items-center gap-3 rounded-[25px] p-4 border-0 outline-none bg-gray-100 dark:bg-[#171717] shadow-[inset_2px_5px_10px_rgba(0,0,0,0.08)] dark:shadow-[inset_2px_5px_10px_rgb(5,5,5)] transition-colors duration-300">
@@ -70,6 +101,7 @@ const LogInPage = () => {
                         <div className="flex justify-end">
                             <button
                                 type="button"
+                                onClick={() => router.push("/forgot-password")}
                                 className="text-sm text-gray-500 dark:text-gray-400 hover:text-red-500 transition-colors duration-300"
                             >
                                 Forgot Password?
@@ -81,13 +113,15 @@ const LogInPage = () => {
 
                             <button
                                 type="submit"
-                                className="flex-1 p-3 rounded-[8px] border border-gray-300 dark:border-transparent outline-none transition-all duration-300 bg-gray-200 dark:bg-[#252525] text-gray-900 dark:text-white hover:bg-gray-300 dark:hover:bg-black"
+                                disabled={loading}
+                                className="flex-1 p-3 rounded-[8px] border border-gray-300 dark:border-transparent outline-none transition-all duration-300 bg-gray-200 dark:bg-[#252525] text-gray-900 dark:text-white hover:bg-gray-300 dark:hover:bg-black disabled:opacity-60 disabled:cursor-not-allowed"
                             >
-                                Login
+                                {loading ? "Logging in..." : "Login"}
                             </button>
 
                             <button
                                 type="button"
+                                onClick={() => router.push("/register")}
                                 className="flex-1 p-3 rounded-[8px] border border-gray-300 dark:border-transparent outline-none transition-all duration-300 bg-gray-200 dark:bg-[#252525] text-gray-900 dark:text-white hover:bg-gray-300 dark:hover:bg-black"
                             >
                                 Sign Up
@@ -105,6 +139,7 @@ const LogInPage = () => {
                         {/* Google Login */}
                         <button
                             type="button"
+                            onClick={() => authClient.signIn.social({ provider: "google", callbackURL: "/" })}
                             className="flex items-center justify-center gap-3 w-full p-3 rounded-[8px] border border-gray-300 dark:border-[#444] bg-gray-100 dark:bg-[#252525] text-gray-900 dark:text-white transition-all duration-300 hover:bg-gray-200 dark:hover:bg-black hover:border-gray-400 dark:hover:border-gray-500"
                         >
                             <svg

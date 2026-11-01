@@ -52,13 +52,13 @@ const NotFound = () => {
                 <h1 className="mt-4 text-4xl font-extrabold tracking-tight text-gray-900 sm:text-6xl dark:text-white">
                     Oops! This Studio
                     <span className="block text-lime-500">
-                        Doesn't Exist.
+                        Doesn&apos;t Exist.
                     </span>
                 </h1>
 
                 <p className="mx-auto mt-5 max-w-lg text-base leading-7 text-gray-600 dark:text-gray-400">
-                    Looks like you've wandered into an empty studio.
-                    The page you're looking for may have been moved,
+                    Looks like you&apos;ve wandered into an empty studio.
+                    The page you&apos;re looking for may have been moved,
                     deleted, or never existed.
                 </p>
 
