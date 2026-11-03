@@ -19,6 +19,7 @@ import { useToast } from "@/lib/use-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import DashboardLayoutShell from "@/component/dashboard/DashboardLayoutShell";
 
 const ProfilePage = () => {
     const router = useRouter();
@@ -47,48 +48,52 @@ const ProfilePage = () => {
     // 1. Loading State
     if (isPending) {
         return (
-            <div className="mx-auto w-full max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
-                <div className="flex items-center gap-5">
-                    <Skeleton className="size-20 rounded-full" />
-                    <div className="space-y-2">
-                        <Skeleton className="h-6 w-48" />
-                        <Skeleton className="h-4 w-64" />
+            <DashboardLayoutShell>
+                <div className="flex flex-col gap-6">
+                    <div className="flex items-center gap-5">
+                        <Skeleton className="size-20 rounded-full" />
+                        <div className="space-y-2">
+                            <Skeleton className="h-6 w-48" />
+                            <Skeleton className="h-4 w-64" />
+                        </div>
+                    </div>
+                    <div className="mt-8 grid gap-6 sm:grid-cols-2">
+                        <Skeleton className="h-44 w-full rounded-2xl" />
+                        <Skeleton className="h-44 w-full rounded-2xl" />
                     </div>
                 </div>
-                <div className="mt-8 grid gap-6 sm:grid-cols-2">
-                    <Skeleton className="h-44 w-full rounded-2xl" />
-                    <Skeleton className="h-44 w-full rounded-2xl" />
-                </div>
-            </div>
+            </DashboardLayoutShell>
         );
     }
 
     // 2. Unauthenticated State
     if (!user) {
         return (
-            <div className="mx-auto flex min-h-[60vh] w-full max-w-md flex-col items-center justify-center px-4 text-center">
-                <div className="flex size-16 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
-                    <UserIcon className="size-8" />
+            <DashboardLayoutShell>
+                <div className="mx-auto flex min-h-[50vh] w-full max-w-md flex-col items-center justify-center text-center">
+                    <div className="flex size-16 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
+                        <UserIcon className="size-8" />
+                    </div>
+                    <h1 className="mt-4 text-2xl font-bold tracking-tight text-foreground">
+                        Sign in to view your profile
+                    </h1>
+                    <p className="mt-2 text-sm text-muted-foreground">
+                        Your profile information, listings, and bookings are tied to your account.
+                    </p>
+                    <div className="mt-6 flex w-full gap-3">
+                        <Link href="/login" className="flex-1">
+                            <Button className="w-full rounded-full bg-primary font-semibold text-primary-foreground hover:bg-primary/90">
+                                Log In
+                            </Button>
+                        </Link>
+                        <Link href="/register" className="flex-1">
+                            <Button variant="outline" className="w-full rounded-full">
+                                Register
+                            </Button>
+                        </Link>
+                    </div>
                 </div>
-                <h1 className="mt-4 text-2xl font-bold tracking-tight text-foreground">
-                    Sign in to view your profile
-                </h1>
-                <p className="mt-2 text-sm text-muted-foreground">
-                    Your profile information, listings, and bookings are tied to your account.
-                </p>
-                <div className="mt-6 flex w-full gap-3">
-                    <Link href="/login" className="flex-1">
-                        <Button className="w-full rounded-full bg-primary font-semibold text-primary-foreground hover:bg-primary/90">
-                            Log In
-                        </Button>
-                    </Link>
-                    <Link href="/register" className="flex-1">
-                        <Button variant="outline" className="w-full rounded-full">
-                            Register
-                        </Button>
-                    </Link>
-                </div>
-            </div>
+            </DashboardLayoutShell>
         );
     }
 
@@ -101,9 +106,10 @@ const ProfilePage = () => {
         .join("");
 
     return (
-        <div className="mx-auto w-full max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
-            {/* Profile Header */}
-            <div className="flex flex-col gap-6 rounded-3xl border border-border bg-card p-6 shadow-sm sm:flex-row sm:items-center sm:justify-between sm:p-8">
+        <DashboardLayoutShell>
+            <div className="flex flex-col gap-8">
+                {/* Profile Header */}
+                <div className="flex flex-col gap-6 rounded-3xl border border-border bg-card p-6 shadow-sm sm:flex-row sm:items-center sm:justify-between sm:p-8">
                 <div className="flex items-center gap-5">
                     {user.image ? (
                         // eslint-disable-next-line @next/next/no-img-element
@@ -225,7 +231,8 @@ const ProfilePage = () => {
                     </CardContent>
                 </Card>
             </div>
-        </div>
+            </div>
+        </DashboardLayoutShell>
     );
 };
 
