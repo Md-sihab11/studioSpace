@@ -13,6 +13,13 @@ import {
     EmptyTitle,
 } from "@/components/ui/empty";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+    Carousel,
+    CarouselContent,
+    CarouselItem,
+    CarouselNext,
+    CarouselPrevious,
+} from "@/components/ui/carousel";
 
 /** Where the StudioSpace backend serves the studio list from. */
 const STUDIOS_API = "https://studiospace-backend-oqeo.onrender.com/studios";
@@ -177,7 +184,7 @@ const FeaturedStudios = () => {
 
     return (
         <section id="featured" className="scroll-mt-24 bg-gray-50 py-16 dark:bg-[#0a0a0a] sm:py-20 lg:py-24">
-            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-10">
+            <div className="mx-auto w-full max-w-[1600px] px-4 sm:px-6 lg:px-8 xl:px-10">
                 {/* Section header */}
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                     <div className="max-w-2xl">
@@ -313,96 +320,118 @@ const FeaturedStudios = () => {
                         </Empty>
                     </div>
                 ) : filtered.length > 0 ? (
-                    <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                        {filtered.map((studio) => (
-                            <Link
-                                key={studio.id}
-                                href={`/studios/${studio.id}`}
-                                className="group flex flex-col overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-teal-300 hover:shadow-2xl hover:shadow-black/5 dark:border-white/10 dark:bg-[#131313] dark:hover:border-sky-500/40"
-                            >
-                                {/* Image */}
-                                <div className="relative h-56 w-full overflow-hidden">
-                                    {studio.image ? (
-                                        isUnsplashUrl(studio.image) ? (
-                                            <Image
-                                                src={optimizeImageUrl(studio.image)}
-                                                alt={studio.name}
-                                                fill
-                                                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                                                className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
-                                            />
-                                        ) : (
-                                            // eslint-disable-next-line @next/next/no-img-element
-                                            <img
-                                                src={studio.image}
-                                                alt={studio.name}
-                                                className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
-                                            />
-                                        )
-                                    ) : (
-                                        <span className="absolute inset-0 flex items-center justify-center text-muted-foreground">
-                                            <Aperture className="size-10" strokeWidth={1.5} />
-                                        </span>
-                                    )}
-                                    <div className="absolute inset-x-0 top-0 flex items-start justify-between p-4">
-                                        <span className="rounded-full bg-black/55 px-3 py-1 text-xs font-semibold text-white backdrop-blur-md">
-                                            {studio.category}
-                                        </span>
-                                        <span className="inline-flex items-center gap-1 rounded-full bg-[#B7F36B] px-2.5 py-1 text-xs font-bold text-black">
-                                            <Verified className="size-3" />
-                                            Verified
-                                        </span>
-                                    </div>
-                                    <div className="absolute right-4 bottom-4 inline-flex items-center gap-1 rounded-full bg-black/55 px-2.5 py-1 text-xs font-semibold text-white backdrop-blur-md">
-                                        <Star className="size-3 fill-[#B7F36B] text-[#B7F36B]" />
-                                        {studio.rating.toFixed(1)}
-                                        <span className="font-normal text-white/70">
-                                            ({studio.reviews})
-                                        </span>
-                                    </div>
-                                </div>
-
-                                {/* Body */}
-                                <div className="flex flex-1 flex-col p-5">
-                                    <h3 className="text-lg font-bold text-gray-900 transition-colors group-hover:text-teal-700 dark:text-white dark:group-hover:text-sky-300">
-                                        {studio.name}
-                                    </h3>
-                                    <p className="mt-1.5 inline-flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400">
-                                        <MapPin className="size-3.5 shrink-0" />
-                                        {studio.location}
-                                    </p>
-
-                                    <div className="mt-3.5 flex flex-wrap gap-1.5">
-                                        {studio.features.map((feature) => (
-                                            <span
-                                                key={feature}
-                                                className="rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-600 dark:bg-white/5 dark:text-gray-300"
-                                            >
-                                                {feature}
-                                            </span>
-                                        ))}
-                                    </div>
-
-                                    <div className="mt-5 mb-5 flex items-center justify-between border-t border-gray-100 pt-4 dark:border-white/10">
-                                        <p className="text-sm text-gray-500 dark:text-gray-400">
-                                            <span className="text-lg font-bold text-gray-900 dark:text-white">
-                                                ${studio.pricePerHour}
-                                            </span>
-                                            /hour
-                                        </p>
-                                        <span className="inline-flex items-center gap-1 text-sm font-semibold text-teal-700 dark:text-sky-400">
-                                            <Clock className="size-3.5" />
-                                            Available today
-                                        </span>
-                                    </div>
-                                    <span
-                                        className="inline-flex items-center justify-center rounded-full bg-[#e63946] px-8 py-3.5 text-sm font-semibold text-white shadow-lg shadow-[#e63946]/30 transition-all duration-200 group-hover:bg-[#ff4757] group-hover:shadow-xl group-hover:shadow-[#e63946]/40 active:scale-[0.98]"
+                    <div className="relative mt-10">
+                        <Carousel
+                            opts={{
+                                align: "start",
+                                loop: false,
+                            }}
+                            className="w-full"
+                        >
+                            <CarouselContent className="-ml-6 py-4">
+                                {filtered.map((studio) => (
+                                    <CarouselItem
+                                        key={studio.id}
+                                        className="basis-full pl-6 sm:basis-1/2 lg:basis-1/3"
                                     >
-                                        View Details
-                                    </span>
-                                </div>
-                            </Link>
-                        ))}
+                                        <div className="h-full">
+                                            <Link
+                                                href={`/studios/${studio.id}`}
+                                                className="group flex h-full flex-col overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-teal-300 hover:shadow-2xl hover:shadow-black/5 dark:border-white/10 dark:bg-[#131313] dark:hover:border-sky-500/40"
+                                            >
+                                                {/* Image */}
+                                                <div className="relative h-56 w-full shrink-0 overflow-hidden">
+                                                    {studio.image ? (
+                                                        isUnsplashUrl(studio.image) ? (
+                                                            <Image
+                                                                src={optimizeImageUrl(studio.image)}
+                                                                alt={studio.name}
+                                                                fill
+                                                                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                                                                className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+                                                            />
+                                                        ) : (
+                                                            // eslint-disable-next-line @next/next/no-img-element
+                                                            <img
+                                                                src={studio.image}
+                                                                alt={studio.name}
+                                                                className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+                                                            />
+                                                        )
+                                                    ) : (
+                                                        <span className="absolute inset-0 flex items-center justify-center text-muted-foreground">
+                                                            <Aperture className="size-10" strokeWidth={1.5} />
+                                                        </span>
+                                                    )}
+                                                    <div className="absolute inset-x-0 top-0 flex items-start justify-between p-4">
+                                                        <span className="rounded-full bg-black/55 px-3 py-1 text-xs font-semibold text-white backdrop-blur-md">
+                                                            {studio.category}
+                                                        </span>
+                                                        <span className="inline-flex items-center gap-1 rounded-full bg-[#B7F36B] px-2.5 py-1 text-xs font-bold text-black">
+                                                            <Verified className="size-3" />
+                                                            Verified
+                                                        </span>
+                                                    </div>
+                                                    <div className="absolute right-4 bottom-4 inline-flex items-center gap-1 rounded-full bg-black/55 px-2.5 py-1 text-xs font-semibold text-white backdrop-blur-md">
+                                                        <Star className="size-3 fill-[#B7F36B] text-[#B7F36B]" />
+                                                        {studio.rating.toFixed(1)}
+                                                        <span className="font-normal text-white/70">
+                                                            ({studio.reviews})
+                                                        </span>
+                                                    </div>
+                                                </div>
+
+                                                {/* Body */}
+                                                <div className="flex flex-1 flex-col justify-between p-5">
+                                                    <div>
+                                                        <h3 className="text-lg font-bold text-gray-900 transition-colors group-hover:text-teal-700 dark:text-white dark:group-hover:text-sky-300">
+                                                            {studio.name}
+                                                        </h3>
+                                                        <p className="mt-1.5 inline-flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400">
+                                                            <MapPin className="size-3.5 shrink-0" />
+                                                            {studio.location}
+                                                        </p>
+
+                                                        <div className="mt-3.5 flex flex-wrap gap-1.5">
+                                                            {studio.features.map((feature) => (
+                                                                <span
+                                                                    key={feature}
+                                                                    className="rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-600 dark:bg-white/5 dark:text-gray-300"
+                                                                >
+                                                                    {feature}
+                                                                </span>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="mt-5">
+                                                        <div className="mb-5 flex items-center justify-between border-t border-gray-100 pt-4 dark:border-white/10">
+                                                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                                                                <span className="text-lg font-bold text-gray-900 dark:text-white">
+                                                                    ${studio.pricePerHour}
+                                                                </span>
+                                                                /hour
+                                                            </p>
+                                                            <span className="inline-flex items-center gap-1 text-sm font-semibold text-teal-700 dark:text-sky-400">
+                                                                <Clock className="size-3.5" />
+                                                                Available today
+                                                            </span>
+                                                        </div>
+                                                        <span
+                                                            className="inline-flex w-full items-center justify-center rounded-full bg-[#e63946] px-8 py-3.5 text-sm font-semibold text-white shadow-lg shadow-[#e63946]/30 transition-all duration-200 group-hover:bg-[#ff4757] group-hover:shadow-xl group-hover:shadow-[#e63946]/40 active:scale-[0.98]"
+                                                        >
+                                                            View Details
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </Link>
+                                        </div>
+                                    </CarouselItem>
+                                ))}
+                            </CarouselContent>
+                            <CarouselPrevious className="-left-3 sm:-left-5 lg:-left-6 z-20 size-10 rounded-full border border-gray-200 bg-white/95 text-gray-800 shadow-md backdrop-blur-sm transition-all hover:bg-white hover:text-black hover:scale-105 active:scale-95 disabled:opacity-30 dark:border-white/10 dark:bg-[#131313]/95 dark:text-white dark:hover:bg-[#1f1f1f]" />
+                            <CarouselNext className="-right-3 sm:-right-5 lg:-right-6 z-20 size-10 rounded-full border border-gray-200 bg-white/95 text-gray-800 shadow-md backdrop-blur-sm transition-all hover:bg-white hover:text-black hover:scale-105 active:scale-95 disabled:opacity-30 dark:border-white/10 dark:bg-[#131313]/95 dark:text-white dark:hover:bg-[#1f1f1f]" />
+                        </Carousel>
                     </div>
                 ) : (
                     /* ── Empty State ── */

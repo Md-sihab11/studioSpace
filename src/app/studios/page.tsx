@@ -205,7 +205,7 @@ const StudiosContent = () => {
               : `Showing ${filtered.length} ${filtered.length === 1 ? "studio" : "studios"}`;
 
     return (
-        <section className="mx-auto w-full max-w-7xl px-4 pt-10 pb-16 sm:px-6 lg:px-10">
+        <section className="mx-auto w-full max-w-[1600px] px-4 pt-10 pb-16 sm:px-6 lg:px-8 xl:px-10">
             {/* Heading */}
             <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
                 Explore All Studios
@@ -503,7 +503,7 @@ const StudiosPage = () => {
     return (
         <Suspense
             fallback={
-                <section className="mx-auto w-full max-w-7xl px-4 pt-10 pb-16 sm:px-6 lg:px-10">
+                <section className="mx-auto w-full max-w-[1600px] px-4 pt-10 pb-16 sm:px-6 lg:px-8 xl:px-10">
                     <Skeleton className="h-10 w-64" />
                     <Skeleton className="mt-3 h-5 w-48" />
                     <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">

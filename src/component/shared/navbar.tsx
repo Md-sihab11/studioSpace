@@ -62,6 +62,7 @@ const Navbar = () => {
     const [activeSection, setActiveSection] = useState<string | null>(null);
     const [mobileOpen, setMobileOpen] = useState(false);
     const [profileOpen, setProfileOpen] = useState(false);
+    const [imageError, setImageError] = useState(false);
 
     const isDark = useSyncExternalStore(
         themeSubscribe,
@@ -251,7 +252,7 @@ const Navbar = () => {
                     : "border-transparent bg-white/60 backdrop-blur-md dark:bg-[#0a0a0a]/60"
             )}
         >
-            <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 md:h-[72px] lg:px-10">
+            <div className="mx-auto flex h-16 w-full max-w-[1600px] items-center justify-between gap-4 px-4 sm:px-6 md:h-[72px] lg:px-8 xl:px-10">
 
                 {/* Brand */}
                 <Link
@@ -353,11 +354,21 @@ const Navbar = () => {
                                 aria-expanded={profileOpen}
                                 className="flex items-center gap-2 rounded-full border border-gray-200 py-1 pl-1 pr-2.5 transition-all duration-200 hover:border-teal-400 hover:shadow-md dark:border-white/10 dark:hover:border-sky-400"
                             >
-                                <span className="flex size-8 items-center justify-center rounded-full bg-linear-to-br from-teal-600 to-blue-600 text-xs font-bold text-white">
-                                    {initials || (
-                                        <User className="size-4" />
-                                    )}
-                                </span>
+                                {user.image && !imageError ? (
+                                    // eslint-disable-next-line @next/next/no-img-element
+                                    <img
+                                        src={user.image}
+                                        alt={userName}
+                                        onError={() => setImageError(true)}
+                                        className="size-8 rounded-full border border-primary/20 object-cover"
+                                    />
+                                ) : (
+                                    <span className="flex size-8 items-center justify-center rounded-full bg-linear-to-br from-teal-600 to-blue-600 text-xs font-bold text-white">
+                                        {initials || (
+                                            <User className="size-4" />
+                                        )}
+                                    </span>
+                                )}
 
                                 <span className="max-w-28 truncate text-sm font-medium text-gray-800 dark:text-gray-200">
                                     {userName}
@@ -374,22 +385,36 @@ const Navbar = () => {
                             {profileOpen && (
                                 <div
                                     role="menu"
-                                    className="absolute right-0 mt-2 w-60 overflow-hidden rounded-2xl border border-gray-200 bg-white p-2 shadow-2xl shadow-black/10 dark:border-white/10 dark:bg-[#141414]"
+                                    className="absolute right-0 mt-2 w-64 overflow-hidden rounded-2xl border border-gray-200 bg-white p-2 shadow-2xl shadow-black/10 dark:border-white/10 dark:bg-[#141414]"
                                 >
                                     <Link
                                         href="/profile"
                                         onClick={() => setProfileOpen(false)}
-                                        className="block border-b border-gray-100 px-3 py-2.5 transition-colors hover:bg-gray-50 dark:border-white/10 dark:hover:bg-white/5"
+                                        className="flex items-center gap-3 border-b border-gray-100 px-3 py-2.5 transition-colors hover:bg-gray-50 dark:border-white/10 dark:hover:bg-white/5"
                                     >
-                                        <p className="truncate text-sm font-semibold text-gray-900 dark:text-white">
-                                            {userName}
-                                        </p>
-
-                                        {user.email && (
-                                            <p className="truncate text-xs text-gray-500 dark:text-gray-400">
-                                                {user.email}
-                                            </p>
+                                        {user.image && !imageError ? (
+                                            // eslint-disable-next-line @next/next/no-img-element
+                                            <img
+                                                src={user.image}
+                                                alt={userName}
+                                                className="size-9 rounded-full border border-primary/20 object-cover"
+                                            />
+                                        ) : (
+                                            <span className="flex size-9 items-center justify-center rounded-full bg-linear-to-br from-teal-600 to-blue-600 text-xs font-bold text-white">
+                                                {initials || <User className="size-4" />}
+                                            </span>
                                         )}
+                                        <div className="min-w-0 flex-1">
+                                            <p className="truncate text-sm font-semibold text-gray-900 dark:text-white">
+                                                {userName}
+                                            </p>
+
+                                            {user.email && (
+                                                <p className="truncate text-xs text-gray-500 dark:text-gray-400">
+                                                    {user.email}
+                                                </p>
+                                            )}
+                                        </div>
                                     </Link>
 
                                     <Link
@@ -562,11 +587,20 @@ const Navbar = () => {
                                         onClick={() => setMobileOpen(false)}
                                         className="mb-2 flex items-center gap-3 rounded-2xl p-2 transition-colors hover:bg-gray-100 dark:hover:bg-white/5"
                                     >
-                                        <span className="flex size-10 items-center justify-center rounded-full bg-linear-to-br from-teal-600 to-blue-600 text-sm font-bold text-white">
-                                            {initials || (
-                                                <User className="size-4" />
-                                            )}
-                                        </span>
+                                        {user.image && !imageError ? (
+                                            // eslint-disable-next-line @next/next/no-img-element
+                                            <img
+                                                src={user.image}
+                                                alt={userName}
+                                                className="size-10 rounded-full border border-primary/20 object-cover"
+                                            />
+                                        ) : (
+                                            <span className="flex size-10 items-center justify-center rounded-full bg-linear-to-br from-teal-600 to-blue-600 text-sm font-bold text-white">
+                                                {initials || (
+                                                    <User className="size-4" />
+                                                )}
+                                            </span>
+                                        )}
 
                                         <div className="min-w-0">
                                             <p className="truncate text-sm font-semibold text-gray-900 dark:text-white">

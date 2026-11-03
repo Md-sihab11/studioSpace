@@ -52,7 +52,7 @@ const HowItWorks = () => {
                 className="pointer-events-none absolute -top-32 left-1/2 h-80 w-[42rem] -translate-x-1/2 rounded-full bg-lime-400/10 blur-3xl"
             />
 
-            <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-10">
+            <div className="relative mx-auto w-full max-w-[1600px] px-4 sm:px-6 lg:px-8 xl:px-10">
                 {/* Section header */}
                 <div className="mx-auto max-w-2xl text-center">
                     <p className="text-xs font-semibold tracking-[0.2em] text-[#B7F36B] uppercase">

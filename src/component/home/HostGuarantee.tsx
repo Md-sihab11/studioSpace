@@ -36,7 +36,7 @@ const HostGuarantee = () => {
             id="trust"
             className="scroll-mt-24 bg-white py-16 dark:bg-[#0d0d0d] sm:py-20 lg:py-24"
         >
-            <div className="mx-auto grid max-w-7xl items-center gap-12 px-4 sm:px-6 lg:grid-cols-2 lg:gap-16 lg:px-10">
+            <div className="mx-auto grid w-full max-w-[1600px] items-center gap-12 px-4 sm:px-6 lg:grid-cols-2 lg:gap-16 lg:px-8 xl:px-10">
                 {/* Visual */}
                 <div className="relative">
                     <div className="relative h-[360px] overflow-hidden rounded-3xl shadow-2xl shadow-black/10 sm:h-[440px]">

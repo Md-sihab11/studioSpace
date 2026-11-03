@@ -44,11 +44,19 @@ const SLIDES: HeroSlide[] = [
     },
 ];
 
+function LinkedinIcon({ className }: SocialIconProps) {
+    return (
+        <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M4.5 9h3.8v11H4.5zM6.4 3.5a2.2 2.2 0 110 4.4 2.2 2.2 0 010-4.4zM10.5 9h3.6v1.5c.5-.9 1.8-1.8 3.6-1.8 3.8 0 4.5 2.4 4.5 5.6V20h-3.8v-5.1c0-1.3 0-2.9-1.8-2.9s-2.1 1.4-2.1 2.8V20h-3.8z" />
+        </svg>
+    );
+}
+
 const SOCIAL_LINKS = [
-    { label: "X (Twitter)", icon: XIcon },
-    { label: "Facebook", icon: FacebookIcon },
-    { label: "Instagram", icon: InstagramIcon },
-    { label: "YouTube", icon: YoutubeIcon },
+    { label: "LinkedIn", href: "https://www.linkedin.com/in/mdsihab-sharar/", icon: LinkedinIcon },
+    { label: "Instagram", href: "https://www.instagram.com/mdshihabmuzumder/", icon: InstagramIcon },
+    { label: "Facebook", href: "#", icon: FacebookIcon },
+    { label: "X (Twitter)", href: "#", icon: XIcon },
 ];
 
 type SocialIconProps = { className?: string };
@@ -137,7 +145,7 @@ const HeroSlider = () => {
                             <div className="absolute inset-0 bg-linear-to-t from-[#1a1c23]/85 via-transparent to-[#1a1c23]/30" />
 
                             {/* Slide content */}
-                            <div className="relative mx-auto flex h-full max-w-7xl items-center px-4 sm:px-6 lg:px-10 lg:pl-32">
+                            <div className="relative mx-auto flex h-full w-full max-w-[1600px] items-center px-4 sm:px-6 lg:px-8 xl:px-10 lg:pl-32">
                                 <div className="max-w-2xl">
                                     <h1
                                         className="text-6xl leading-[0.95] font-extrabold tracking-tight text-white uppercase sm:text-7xl lg:text-8xl"
@@ -188,7 +196,9 @@ const HeroSlider = () => {
                     return (
                         <a
                             key={item.label}
-                            href="#"
+                            href={item.href}
+                            target={item.href.startsWith("http") ? "_blank" : undefined}
+                            rel={item.href.startsWith("http") ? "noopener noreferrer" : undefined}
                             aria-label={item.label}
                             className="text-white/50 transition-colors duration-200 hover:text-[#e63946]"
                         >

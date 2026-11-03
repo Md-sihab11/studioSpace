@@ -159,7 +159,7 @@ function ResetPasswordForm() {
 
 const ResetPasswordPage = () => {
     return (
-        <div className="min-h-screen flex items-center justify-center px-4 py-10 bg-gray-50 dark:bg-[#0a0a0a] transition-colors duration-300">
+        <div className="min-h-[calc(100vh-72px)] flex items-center justify-center px-4 py-12 sm:px-6 lg:px-10 bg-gray-50 dark:bg-[#0a0a0a] transition-colors duration-300">
 
             <div className="w-full max-w-[480px] bg-linear-to-br from-[#00ff75] to-[#3700ff] rounded-[22px] transition-all duration-300 hover:shadow-[0_0_30px_1px_rgba(0,255,117,0.3)]">
 

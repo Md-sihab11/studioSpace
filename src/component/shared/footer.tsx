@@ -25,7 +25,7 @@ const Footer = () => {
 
     return (
         <footer className="border-t border-white/10 bg-[#0a0a0a] text-white">
-            <div className="mx-auto max-w-7xl px-6 py-14 sm:px-8 lg:px-10">
+            <div className="mx-auto w-full max-w-[1600px] px-4 py-14 sm:px-6 lg:px-8 xl:px-10">
 
                 <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 lg:gap-10">
 
@@ -143,11 +143,17 @@ const Footer = () => {
                                     Privacy Policy
                                 </a>
                             </li>
-                            <li className="pt-2 text-xs text-gray-500">
-                                📞 +1 (786) 901-1622
+                            <li className="pt-2 text-xs text-gray-400">
+                                <a href="tel:01332416702" className="inline-flex items-center gap-1.5 transition-colors hover:text-white">
+                                    <span>📞</span>
+                                    <span>01332416702</span>
+                                </a>
                             </li>
-                            <li className="text-xs text-gray-500">
-                                ✉️ info@studiospace.com
+                            <li className="text-xs text-gray-400">
+                                <a href="mailto:mdsihabsharar22@gmail.com" className="inline-flex items-center gap-1.5 transition-colors hover:text-white">
+                                    <span>✉️</span>
+                                    <span>mdsihabsharar22@gmail.com</span>
+                                </a>
                             </li>
                         </ul>
                     </div>
@@ -223,12 +229,24 @@ const Footer = () => {
                                     <path d="M18.9 2H22l-7.2 8.2L23.3 22h-6.6l-5.2-6.8L5.5 22H2.4l7.7-8.8L1.9 2h6.8l4.7 6.2zm-1.2 18h1.8L7.4 3.9H5.4z" />
                                 </svg>
                             </a>
-                            <a href="#" aria-label="LinkedIn" className="text-gray-400 transition-colors hover:text-white">
+                            <a
+                                href="https://www.linkedin.com/in/mdsihab-sharar/"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                aria-label="LinkedIn"
+                                className="text-gray-400 transition-colors hover:text-white"
+                            >
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                                     <path d="M4.5 9h3.8v11H4.5zM6.4 3.5a2.2 2.2 0 110 4.4 2.2 2.2 0 010-4.4zM10.5 9h3.6v1.5c.5-.9 1.8-1.8 3.6-1.8 3.8 0 4.5 2.4 4.5 5.6V20h-3.8v-5.1c0-1.3 0-2.9-1.8-2.9s-2.1 1.4-2.1 2.8V20h-3.8z" />
                                 </svg>
                             </a>
-                            <a href="#" aria-label="Instagram" className="text-gray-400 transition-colors hover:text-white">
+                            <a
+                                href="https://www.instagram.com/mdshihabmuzumder/"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                aria-label="Instagram"
+                                className="text-gray-400 transition-colors hover:text-white"
+                            >
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                     <rect x="3" y="3" width="18" height="18" rx="5" />
                                     <circle cx="12" cy="12" r="4" />

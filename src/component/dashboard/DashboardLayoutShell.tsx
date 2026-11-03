@@ -10,6 +10,8 @@ import {
     LogOut,
     Menu,
     Moon,
+    PanelLeftClose,
+    PanelLeftOpen,
     PlusCircle,
     Sun,
     User,
@@ -68,6 +70,8 @@ type DashboardSidebarProps = {
     isDark: boolean;
     toggleTheme: () => void;
     onItemClick?: () => void;
+    isCollapsed?: boolean;
+    onToggleCollapse?: () => void;
 };
 
 const DashboardSidebar = ({
@@ -75,11 +79,14 @@ const DashboardSidebar = ({
     isDark,
     toggleTheme,
     onItemClick,
+    isCollapsed = false,
+    onToggleCollapse,
 }: DashboardSidebarProps) => {
     const router = useRouter();
     const { toast } = useToast();
     const { data: session } = useSession();
     const user = session?.user;
+    const [avatarError, setAvatarError] = useState(false);
 
     const userName = user?.name || user?.email?.split("@")[0] || "Creator";
     const initials = userName
@@ -123,41 +130,74 @@ const DashboardSidebar = ({
     };
 
     return (
-        <div className="flex min-h-full flex-col justify-between">
-            {/* Top: User info + Menu Items 1-5 + 6. Theme Toggle */}
-            <div className="flex flex-col gap-5">
+        <div className="flex flex-1 flex-col justify-between">
+            {/* Top: Header with toggle + User info + Menu Items 1-5 + 6. Theme Toggle */}
+            <div className="flex flex-col gap-4">
+                {/* Header row with collapse/expand toggle button */}
+                {onToggleCollapse && (
+                    <div className={cn("flex items-center", isCollapsed ? "justify-center" : "justify-between")}>
+                        {!isCollapsed && (
+                            <span className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+                                Creator Portal
+                            </span>
+                        )}
+                        <button
+                            type="button"
+                            onClick={onToggleCollapse}
+                            aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+                            title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+                            className="flex size-9 items-center justify-center rounded-xl border border-border text-muted-foreground transition-all duration-200 hover:bg-muted hover:text-foreground"
+                        >
+                            {isCollapsed ? (
+                                <PanelLeftOpen className="size-4.5" />
+                            ) : (
+                                <PanelLeftClose className="size-4.5" />
+                            )}
+                        </button>
+                    </div>
+                )}
+
                 {/* User quick badge */}
                 {user ? (
                     <Link
                         href="/profile"
                         onClick={onItemClick}
-                        className="group flex items-center gap-3 rounded-2xl border border-border/70 bg-muted/40 p-2.5 transition-colors hover:border-primary/40 hover:bg-muted"
+                        title={isCollapsed ? `${userName} (${user.email})` : undefined}
+                        className={cn(
+                            "group flex items-center rounded-2xl border border-border/70 bg-muted/40 transition-colors hover:border-primary/40 hover:bg-muted",
+                            isCollapsed ? "justify-center p-2 size-12 mx-auto" : "gap-3 p-2.5"
+                        )}
                     >
-                        {user.image ? (
+                        {user.image && !avatarError ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img
                                 src={user.image}
                                 alt={userName}
-                                className="size-10 rounded-full border border-primary/20 object-cover"
+                                onError={() => setAvatarError(true)}
+                                className="size-10 rounded-full border border-primary/20 object-cover shrink-0"
                             />
                         ) : (
-                            <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-teal-600 to-blue-600 text-xs font-bold text-white shadow-xs">
+                            <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-black text-white dark:bg-zinc-800 dark:text-white text-xs font-bold shadow-xs">
                                 {initials || <User className="size-4" />}
                             </div>
                         )}
-                        <div className="min-w-0 flex-1">
-                            <p className="truncate text-xs font-bold text-foreground group-hover:text-primary">
-                                {userName}
-                            </p>
-                            <p className="truncate text-[11px] text-muted-foreground">
-                                {user.email}
-                            </p>
-                        </div>
+                        {!isCollapsed && (
+                            <div className="min-w-0 flex-1">
+                                <p className="truncate text-xs font-bold text-foreground group-hover:text-primary">
+                                    {userName}
+                                </p>
+                                <p className="truncate text-[11px] text-muted-foreground">
+                                    {user.email}
+                                </p>
+                            </div>
+                        )}
                     </Link>
                 ) : (
-                    <div className="rounded-2xl border border-dashed border-border p-3 text-xs text-muted-foreground">
-                        Creator Portal
-                    </div>
+                    !isCollapsed && (
+                        <div className="rounded-2xl border border-dashed border-border p-3 text-xs text-muted-foreground">
+                            Creator Portal
+                        </div>
+                    )
                 )}
 
                 {/* Navigation items (1 to 5) + 6. Theme */}
@@ -175,15 +215,19 @@ const DashboardSidebar = ({
                                 href={item.href}
                                 onClick={onItemClick}
                                 aria-current={active ? "page" : undefined}
+                                title={isCollapsed ? item.label : undefined}
                                 className={cn(
-                                    "flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all duration-200",
+                                    "flex items-center rounded-xl text-sm font-medium transition-all duration-200",
+                                    isCollapsed
+                                        ? "size-10 justify-center mx-auto"
+                                        : "gap-3 px-3.5 py-2.5",
                                     active
                                         ? "bg-primary font-semibold text-primary-foreground shadow-sm shadow-primary/20"
                                         : "text-muted-foreground hover:bg-muted hover:text-foreground"
                                 )}
                             >
                                 <Icon className="size-4.5 shrink-0" />
-                                <span>{item.label}</span>
+                                {!isCollapsed && <span>{item.label}</span>}
                             </Link>
                         );
                     })}
@@ -197,32 +241,47 @@ const DashboardSidebar = ({
                                 ? "Switch to light mode"
                                 : "Switch to dark mode"
                         }
-                        className="mt-1 flex w-full items-center justify-between rounded-xl px-3.5 py-2.5 text-sm font-medium text-muted-foreground transition-all duration-200 hover:bg-muted hover:text-foreground"
+                        title={isCollapsed ? `Theme: ${isDark ? "Dark" : "Light"}` : undefined}
+                        className={cn(
+                            "mt-1 flex items-center rounded-xl text-sm font-medium text-muted-foreground transition-all duration-200 hover:bg-muted hover:text-foreground",
+                            isCollapsed
+                                ? "size-10 justify-center mx-auto"
+                                : "w-full justify-between px-3.5 py-2.5"
+                        )}
                     >
-                        <div className="flex items-center gap-3">
+                        <div className={cn("flex items-center", isCollapsed ? "justify-center" : "gap-3")}>
                             {isDark ? (
-                                <Sun className="size-4.5 text-amber-400" />
+                                <Sun className="size-4.5 text-amber-400 shrink-0" />
                             ) : (
-                                <Moon className="size-4.5 text-sky-500" />
+                                <Moon className="size-4.5 text-sky-500 shrink-0" />
                             )}
-                            <span>Theme</span>
+                            {!isCollapsed && <span>Theme</span>}
                         </div>
-                        <span className="rounded-full border border-border bg-card px-2 py-0.5 text-xs font-semibold uppercase text-foreground">
-                            {isDark ? "Dark" : "Light"}
-                        </span>
+                        {!isCollapsed && (
+                            <span className="rounded-full border border-border bg-card px-2 py-0.5 text-xs font-semibold uppercase text-foreground">
+                                {isDark ? "Dark" : "Light"}
+                            </span>
+                        )}
                     </button>
                 </nav>
             </div>
 
             {/* Bottom: 7. Logout */}
-            <div className="mt-8 border-t border-border pt-4">
+            <div className="mt-auto pt-6">
                 <button
                     type="button"
                     onClick={handleSignOut}
-                    className="flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium text-destructive transition-all duration-200 hover:bg-destructive/10"
+                    title={isCollapsed ? "Logout" : undefined}
+                    aria-label="Logout"
+                    className={cn(
+                        "flex items-center rounded-xl text-sm font-medium text-destructive transition-all duration-200 hover:bg-destructive/10",
+                        isCollapsed
+                            ? "size-10 justify-center mx-auto"
+                            : "w-full gap-3 px-3.5 py-2.5"
+                    )}
                 >
                     <LogOut className="size-4.5 shrink-0" />
-                    <span>Logout</span>
+                    {!isCollapsed && <span>Logout</span>}
                 </button>
             </div>
         </div>
@@ -236,6 +295,30 @@ type DashboardLayoutShellProps = {
 const DashboardLayoutShell = ({ children }: DashboardLayoutShellProps) => {
     const pathname = usePathname();
     const [mobileOpen, setMobileOpen] = useState(false);
+    const [isCollapsed, setIsCollapsed] = useState(false);
+
+    useEffect(() => {
+        try {
+            const stored = window.localStorage.getItem("studiospace_sidebar_collapsed");
+            if (stored !== null) {
+                setIsCollapsed(stored === "true");
+            }
+        } catch {
+            // ignore
+        }
+    }, []);
+
+    const toggleCollapse = () => {
+        setIsCollapsed((prev) => {
+            const next = !prev;
+            try {
+                window.localStorage.setItem("studiospace_sidebar_collapsed", String(next));
+            } catch {
+                // ignore
+            }
+            return next;
+        });
+    };
 
     const isDark = useSyncExternalStore(
         themeSubscribe,
@@ -343,6 +426,7 @@ const DashboardLayoutShell = ({ children }: DashboardLayoutShellProps) => {
                                 isDark={isDark}
                                 toggleTheme={toggleTheme}
                                 onItemClick={() => setMobileOpen(false)}
+                                isCollapsed={false}
                             />
                         </div>
                     </div>
@@ -350,18 +434,30 @@ const DashboardLayoutShell = ({ children }: DashboardLayoutShellProps) => {
             )}
 
             {/* Main Layout Container */}
-            <div className="mx-auto flex min-h-[calc(100vh-72px)] w-full max-w-7xl">
+            <div className="mx-auto flex min-h-[calc(100vh-72px)] w-full max-w-[1600px] px-4 sm:px-6 lg:px-8 xl:px-10">
                 {/* Desktop Fixed/Sticky Sidebar */}
-                <aside className="sticky top-[72px] hidden h-[calc(100vh-72px)] w-64 shrink-0 flex-col overflow-y-auto border-r border-border p-5 lg:flex">
+                <aside
+                    className={cn(
+                        "sticky top-[72px] hidden h-[calc(100vh-72px)] shrink-0 flex-col overflow-y-auto border-r border-border py-8 transition-all duration-300 ease-in-out lg:flex",
+                        isCollapsed ? "w-18 pr-3 pl-0" : "w-64 pr-6 pl-0"
+                    )}
+                >
                     <DashboardSidebar
                         pathname={pathname}
                         isDark={isDark}
                         toggleTheme={toggleTheme}
+                        isCollapsed={isCollapsed}
+                        onToggleCollapse={toggleCollapse}
                     />
                 </aside>
 
                 {/* Main Dashboard Content */}
-                <main className="min-w-0 flex-1 px-4 py-8 sm:px-6 lg:px-10 lg:py-10">
+                <main
+                    className={cn(
+                        "min-w-0 flex-1 py-8 transition-all duration-300 ease-in-out",
+                        isCollapsed ? "pl-4 lg:pl-6" : "pl-0 lg:pl-8"
+                    )}
+                >
                     {children}
                 </main>
             </div>

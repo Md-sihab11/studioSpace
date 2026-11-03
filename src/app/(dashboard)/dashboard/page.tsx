@@ -24,7 +24,7 @@ const DashboardPage = () => {
     return (
         <div className="flex flex-col gap-8">
             {/* Header banner */}
-            <div className="flex flex-col gap-2 border-b border-border pb-6 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
                         Welcome back, {userName} 👋
