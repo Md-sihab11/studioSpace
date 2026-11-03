@@ -19,9 +19,6 @@ import { Input } from "@/components/ui/input";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { Textarea } from "@/components/ui/textarea";
 
-/** StudioSpace Express backend (Render). */
-const BACKEND = "https://studiospace-backend-oqeo.onrender.com";
-
 type BookingModalProps = {
     open: boolean;
     onOpenChange: (open: boolean) => void;
@@ -68,10 +65,13 @@ const BookingModal = ({ open, onOpenChange, studio }: BookingModalProps) => {
 
     const validate = () => {
         const next: typeof errors = {};
+
         if (!date) next.date = "Pick a date for your session";
         else if (date < today) next.date = "The date cannot be in the past";
+
         if (!startTime) next.startTime = "Pick a start time";
         if (!Number.isFinite(hourCount) || hourCount < 1) next.hours = "Select a duration";
+
         setErrors(next);
         return Object.keys(next).length === 0;
     };
@@ -85,6 +85,7 @@ const BookingModal = ({ open, onOpenChange, studio }: BookingModalProps) => {
                 description: "Please sign in to book this workspace.",
                 type: "error",
             });
+
             router.push("/login");
             return;
         }
@@ -95,32 +96,40 @@ const BookingModal = ({ open, onOpenChange, studio }: BookingModalProps) => {
                 description: "Please fix the highlighted fields.",
                 type: "error",
             });
+
             return;
         }
 
         setSubmitting(true);
+
         try {
-            // POST /add-booking — the backend always saves it as "Pending".
-            const res = await fetch(`${BACKEND}/add-booking`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    studioId: studio._id,
-                    studioTitle: studio.title,
-                    studioImage: studio.image ?? "",
-                    studioLocation: studio.location ?? "",
-                    hourlyRate: studio.hourlyRate,
-                    userEmail: user.email,
-                    userName: user.name ?? "",
-                    date,
-                    startTime,
-                    hours: hourCount,
-                    total,
-                    notes: notes.trim(),
-                    status: "Pending",
-                    createdAt: new Date().toISOString(),
-                }),
-            });
+            // POST /add-booking
+            // The backend always saves it as "Pending".
+            const res = await fetch(
+                `https://studiospace-backend-oqeo.onrender.com/add-booking`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        studioId: studio._id,
+                        studioTitle: studio.title,
+                        studioImage: studio.image ?? "",
+                        studioLocation: studio.location ?? "",
+                        hourlyRate: studio.hourlyRate,
+                        userEmail: user.email,
+                        userName: user.name ?? "",
+                        date,
+                        startTime,
+                        hours: hourCount,
+                        total,
+                        notes: notes.trim(),
+                        status: "Pending",
+                        createdAt: new Date().toISOString(),
+                    }),
+                }
+            );
 
             const data = await res.json().catch(() => null);
             console.log("API working", data);
@@ -169,11 +178,11 @@ const BookingModal = ({ open, onOpenChange, studio }: BookingModalProps) => {
                         Checking your session…
                     </div>
                 ) : !user ? (
-                    /* Signed out */
                     <div className="flex flex-col items-center gap-3 py-6 text-center">
                         <p className="text-sm text-muted-foreground">
                             Sign in to reserve this workspace by the hour.
                         </p>
+
                         <Button
                             onClick={() => {
                                 onOpenChange(false);
@@ -190,6 +199,7 @@ const BookingModal = ({ open, onOpenChange, studio }: BookingModalProps) => {
                         <div className="grid gap-4 sm:grid-cols-2">
                             <Field>
                                 <FieldLabel htmlFor="booking-date">Date</FieldLabel>
+
                                 <Input
                                     id="booking-date"
                                     type="date"
@@ -197,15 +207,20 @@ const BookingModal = ({ open, onOpenChange, studio }: BookingModalProps) => {
                                     value={date}
                                     onChange={(event) => {
                                         setDate(event.target.value);
-                                        setErrors((prev) => ({ ...prev, date: undefined }));
+                                        setErrors((prev) => ({
+                                            ...prev,
+                                            date: undefined,
+                                        }));
                                     }}
                                     aria-invalid={!!errors.date}
                                 />
+
                                 {errors.date && <FieldError>{errors.date}</FieldError>}
                             </Field>
 
                             <Field>
                                 <FieldLabel htmlFor="booking-time">Start Time</FieldLabel>
+
                                 <Input
                                     id="booking-time"
                                     type="time"
@@ -219,31 +234,45 @@ const BookingModal = ({ open, onOpenChange, studio }: BookingModalProps) => {
                                     }}
                                     aria-invalid={!!errors.startTime}
                                 />
-                                {errors.startTime && <FieldError>{errors.startTime}</FieldError>}
+
+                                {errors.startTime && (
+                                    <FieldError>{errors.startTime}</FieldError>
+                                )}
                             </Field>
 
                             <Field>
                                 <FieldLabel htmlFor="booking-hours">Duration</FieldLabel>
+
                                 <NativeSelect
                                     id="booking-hours"
                                     value={hours}
                                     onChange={(event) => {
                                         setHours(event.target.value);
-                                        setErrors((prev) => ({ ...prev, hours: undefined }));
+                                        setErrors((prev) => ({
+                                            ...prev,
+                                            hours: undefined,
+                                        }));
                                     }}
                                     className="w-full"
                                 >
                                     {HOURS.map((hour) => (
-                                        <NativeSelectOption key={hour} value={String(hour)}>
+                                        <NativeSelectOption
+                                            key={hour}
+                                            value={String(hour)}
+                                        >
                                             {hour} {hour === 1 ? "hour" : "hours"}
                                         </NativeSelectOption>
                                     ))}
                                 </NativeSelect>
+
                                 {errors.hours && <FieldError>{errors.hours}</FieldError>}
                             </Field>
 
                             <Field>
-                                <FieldLabel htmlFor="booking-total">Estimated Total</FieldLabel>
+                                <FieldLabel htmlFor="booking-total">
+                                    Estimated Total
+                                </FieldLabel>
+
                                 <Input
                                     id="booking-total"
                                     value={`$${total} (${hourCount} × $${studio.hourlyRate})`}
@@ -254,8 +283,12 @@ const BookingModal = ({ open, onOpenChange, studio }: BookingModalProps) => {
 
                             <Field className="sm:col-span-2">
                                 <FieldLabel htmlFor="booking-notes">
-                                    Notes <span className="text-muted-foreground">(optional)</span>
+                                    Notes{" "}
+                                    <span className="text-muted-foreground">
+                                        (optional)
+                                    </span>
                                 </FieldLabel>
+
                                 <Textarea
                                     id="booking-notes"
                                     rows={3}
@@ -282,6 +315,7 @@ const BookingModal = ({ open, onOpenChange, studio }: BookingModalProps) => {
                             >
                                 Cancel
                             </Button>
+
                             <Button
                                 type="submit"
                                 disabled={submitting}
