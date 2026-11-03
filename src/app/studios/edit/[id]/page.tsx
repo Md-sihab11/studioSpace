@@ -10,9 +10,6 @@ import type { StudioFormValues } from "@/component/studio-form/StudioForm";
 import StudioForm from "@/component/studio-form/StudioForm";
 import { Skeleton } from "@/components/ui/skeleton";
 
-/** StudioSpace Express backend (Render). */
-const BACKEND = "https://studiospace-backend-oqeo.onrender.com";
-
 const toFormValues = (studio: Studio): Partial<StudioFormValues> => ({
     title: studio.title,
     category: studio.category,
@@ -48,14 +45,18 @@ const EditStudioPage = () => {
             try {
                 let studio: Studio | null = null;
 
-                // Primary: GET /studios/:id (live after the Render redeploy).
+                // Primary: GET /studios/:id
                 try {
                     const res = await fetch(
-                        `${BACKEND}/studios/${encodeURIComponent(id)}`,
-                        { signal: AbortSignal.timeout(60_000) }
+                        `https://studiospace-backend-oqeo.onrender.com/studios/${encodeURIComponent(id)}`,
+                        {
+                            signal: AbortSignal.timeout(60_000),
+                        }
                     );
+
                     const data = await res.json().catch(() => null);
                     console.log("API working", data);
+
                     if (res.ok && data?._id) {
                         studio = data as Studio;
                     }
@@ -63,17 +64,22 @@ const EditStudioPage = () => {
                     // Endpoint missing or backend asleep — use the list below.
                 }
 
-                // Fallback: find the document in GET /studios, so the form
-                // still pre-fills before GET /studios/:id is deployed.
+                // Fallback: find the document in GET /studios.
                 if (!studio) {
-                    const res = await fetch(`${BACKEND}/studios`, {
-                        signal: AbortSignal.timeout(60_000),
-                    });
+                    const res = await fetch(
+                        `https://studiospace-backend-oqeo.onrender.com/studios`,
+                        {
+                            signal: AbortSignal.timeout(60_000),
+                        }
+                    );
+
                     const data = await res.json().catch(() => null);
                     console.log("API working", data);
+
                     if (!res.ok || !Array.isArray(data)) {
                         throw new Error("Failed to load listing");
                     }
+
                     studio =
                         (data as Studio[]).find(
                             (item) => item && item._id === id
@@ -89,8 +95,10 @@ const EditStudioPage = () => {
                 setInitialValues(toFormValues(studio));
             } catch (error) {
                 if (cancelled) return;
+
                 console.error(error);
                 setNotFound(true);
+
                 toast({
                     title: "Could not load listing",
                     description:
@@ -117,9 +125,11 @@ const EditStudioPage = () => {
                 <h1 className="text-xl font-bold text-gray-900 dark:text-white">
                     Listing not found
                 </h1>
+
                 <p className="mt-2 max-w-md text-sm leading-6 text-gray-500 dark:text-gray-400">
                     This listing does not exist or you don&apos;t have access to it.
                 </p>
+
                 <Link
                     href="/my-listings"
                     className="mt-6 inline-flex items-center gap-2 rounded-full bg-primary text-primary-foreground px-6 py-2.5 text-sm font-semibold transition-all hover:bg-primary/90"
@@ -137,10 +147,12 @@ const EditStudioPage = () => {
                 <span className="flex size-11 items-center justify-center rounded-2xl bg-teal-50 text-teal-700 dark:bg-sky-500/10 dark:text-sky-400">
                     <Pencil className="size-5" />
                 </span>
+
                 <div>
                     <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
                         Update Studio
                     </h1>
+
                     <p className="text-sm text-gray-500 dark:text-gray-400">
                         Changes are saved to your listing document.
                     </p>
@@ -150,16 +162,22 @@ const EditStudioPage = () => {
             {loading || !initialValues ? (
                 <div className="flex flex-col gap-5 rounded-3xl border border-gray-200 bg-white p-6 dark:border-white/10 dark:bg-[#131313]">
                     <Skeleton className="h-7 w-52" />
+
                     <div className="grid gap-4 sm:grid-cols-2">
                         {Array.from({ length: 6 }).map((_, i) => (
                             <Skeleton key={i} className="h-8 w-full" />
                         ))}
                     </div>
+
                     <Skeleton className="h-28 w-full" />
                     <Skeleton className="h-10 w-40 self-end" />
                 </div>
             ) : (
-                <StudioForm mode="edit" studioId={id} initialValues={initialValues} />
+                <StudioForm
+                    mode="edit"
+                    studioId={id}
+                    initialValues={initialValues}
+                />
             )}
         </div>
     );
