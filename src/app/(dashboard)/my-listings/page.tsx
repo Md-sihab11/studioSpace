@@ -45,22 +45,29 @@ const MyListingsPage = () => {
     useEffect(() => {
         if (sessionPending || !session?.user) return;
 
+        const ownerEmail = session.user.email;
         let cancelled = false;
 
         (async () => {
             try {
-                const response = await fetch("/api/studios");
-                const data = await response.json().catch(() => null);
+                // GET /my-listings/:email
+                const res = await fetch(
+                    `https://studiospace-backend-oqeo.onrender.com/my-listings/${encodeURIComponent(ownerEmail)}`
+                );
+
+                const data = await res.json().catch(() => null);
+                console.log("API working", data);
 
                 if (cancelled) return;
 
-                if (!response.ok || !data?.success) {
-                    throw new Error(data?.error || "Failed to load listings");
+                if (!res.ok || !Array.isArray(data)) {
+                    throw new Error("Failed to load listings");
                 }
 
-                setListings(data.studios as Studio[]);
+                setListings(data as Studio[]);
             } catch (error) {
                 if (cancelled) return;
+
                 toast({
                     title: "Could not load listings",
                     description:
@@ -79,24 +86,34 @@ const MyListingsPage = () => {
 
     const handleDelete = async () => {
         if (!pendingDelete) return;
+
         setDeleting(true);
 
         try {
-            const response = await fetch(`/api/studios/${pendingDelete._id}`, {
-                method: "DELETE",
-            });
-            const data = await response.json().catch(() => null);
+            const res = await fetch(
+                `https://studiospace-backend-oqeo.onrender.com/delete-studio/${pendingDelete._id}`,
+                {
+                    method: "DELETE",
+                }
+            );
 
-            if (!response.ok || !data?.success) {
-                throw new Error(data?.error || "Failed to delete listing");
+            const data = await res.json().catch(() => null);
+            console.log("API working", data);
+
+            if (!res.ok || data?.success === false) {
+                throw new Error(data?.message || "Failed to delete listing");
             }
 
-            setListings((prev) => prev.filter((s) => s._id !== pendingDelete._id));
+            setListings((prev) =>
+                prev.filter((s) => s._id !== pendingDelete._id)
+            );
+
             toast({
                 title: "Listing deleted",
                 description: `"${pendingDelete.title}" has been removed.`,
                 type: "success",
             });
+
             setPendingDelete(null);
         } catch (error) {
             toast({
@@ -120,9 +137,10 @@ const MyListingsPage = () => {
                     Manage the spaces you host on StudioSpace.
                 </p>
             </div>
+
             <Link
                 href="/add-studio"
-                className="inline-flex items-center gap-2 rounded-full bg-[#B7F36B] px-5 py-2.5 text-sm font-semibold text-black shadow-md shadow-lime-500/20 transition-all duration-200 hover:bg-[#a5e653] active:scale-[0.98]"
+                className="inline-flex items-center gap-2 rounded-full bg-primary text-primary-foreground px-5 py-2.5 text-sm font-semibold shadow-md shadow-primary/20 transition-all duration-200 hover:bg-primary/90 active:scale-[0.98]"
             >
                 <Plus className="size-4" />
                 Add New Studio
@@ -142,12 +160,14 @@ const MyListingsPage = () => {
                     <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
                         Sign in to see your listings
                     </h2>
+
                     <p className="mt-2 max-w-sm text-sm text-gray-500 dark:text-gray-400">
                         Your studios are tied to your account. Sign in to manage them.
                     </p>
+
                     <Link
                         href="/login"
-                        className="mt-5 rounded-full bg-[#B7F36B] px-6 py-2.5 text-sm font-semibold text-black transition-all hover:bg-[#a5e653]"
+                        className="mt-5 rounded-full bg-primary text-primary-foreground px-6 py-2.5 text-sm font-semibold transition-all hover:bg-primary/90"
                     >
                         Sign in
                     </Link>
@@ -163,10 +183,12 @@ const MyListingsPage = () => {
                             className="flex items-center gap-4 rounded-2xl border border-gray-200 bg-white p-4 dark:border-white/10 dark:bg-[#131313]"
                         >
                             <Skeleton className="size-20 shrink-0 rounded-xl" />
+
                             <div className="flex-1 space-y-2">
                                 <Skeleton className="h-5 w-48" />
                                 <Skeleton className="h-4 w-72" />
                             </div>
+
                             <Skeleton className="hidden h-8 w-28 rounded-full sm:block" />
                         </div>
                     ))}
@@ -182,9 +204,11 @@ const MyListingsPage = () => {
                                 <LayoutGrid className="size-9" strokeWidth={1.5} />
                             </span>
                         </EmptyMedia>
+
                         <EmptyTitle className="text-xl font-bold text-gray-900 dark:text-white">
                             No listings yet
                         </EmptyTitle>
+
                         <EmptyDescription className="max-w-sm text-sm leading-6">
                             Studios you list as a host will appear here. Manage photos, set
                             your pricing and availability, and start earning from your space —
@@ -196,11 +220,12 @@ const MyListingsPage = () => {
                         <Link
                             id="add-studio-from-listings"
                             href="/add-studio"
-                            className="inline-flex items-center gap-2 rounded-full bg-[#B7F36B] px-6 py-2.5 text-sm font-semibold text-black shadow-md shadow-lime-500/20 transition-all duration-200 hover:bg-[#a5e653] hover:shadow-lg active:scale-[0.98]"
+                            className="inline-flex items-center gap-2 rounded-full bg-primary text-primary-foreground px-6 py-2.5 text-sm font-semibold shadow-md shadow-primary/20 transition-all duration-200 hover:bg-primary/90 hover:shadow-lg active:scale-[0.98]"
                         >
                             <Plus className="size-4" />
                             List Your Studio
                         </Link>
+
                         <Link
                             href="/#trust"
                             className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 transition-colors hover:text-teal-600 dark:text-gray-400 dark:hover:text-sky-400"
@@ -230,17 +255,25 @@ const MyListingsPage = () => {
                                         e.currentTarget.style.display = "none";
                                     }}
                                 />
+
                                 <div className="min-w-0">
                                     <div className="flex flex-wrap items-center gap-2">
                                         <h2 className="truncate text-base font-semibold text-gray-900 dark:text-white">
                                             {studio.title}
                                         </h2>
-                                        <Badge variant="secondary">{studio.category}</Badge>
+
+                                        <Badge variant="secondary">
+                                            {studio.category}
+                                        </Badge>
                                     </div>
+
                                     <p className="mt-1 flex items-center gap-1.5 truncate text-sm text-gray-500 dark:text-gray-400">
                                         <MapPin className="size-3.5 shrink-0" />
-                                        <span className="truncate">{studio.location}</span>
+                                        <span className="truncate">
+                                            {studio.location}
+                                        </span>
                                     </p>
+
                                     <p className="mt-1 flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400">
                                         <Users className="size-3.5 shrink-0" />
                                         Up to {studio.maxCapacity} guests
@@ -256,6 +289,7 @@ const MyListingsPage = () => {
                                         /hr
                                     </span>
                                 </span>
+
                                 <span className="text-xs text-gray-500 dark:text-gray-400">
                                     ${studio.securityDeposit} deposit
                                 </span>
@@ -266,11 +300,14 @@ const MyListingsPage = () => {
                                 <Button
                                     variant="outline"
                                     size="sm"
-                                    onClick={() => router.push(`/my-listings/${studio._id}/edit`)}
+                                    onClick={() =>
+                                        router.push(`/studios/edit/${studio._id}`)
+                                    }
                                 >
                                     <Pencil />
                                     Update
                                 </Button>
+
                                 <Button
                                     variant="destructive"
                                     size="sm"
@@ -294,15 +331,22 @@ const MyListingsPage = () => {
             >
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Delete this listing?</AlertDialogTitle>
+                        <AlertDialogTitle>
+                            Delete this listing?
+                        </AlertDialogTitle>
+
                         <AlertDialogDescription>
                             {pendingDelete
                                 ? `"${pendingDelete.title}" will be permanently removed from MongoDB. This action cannot be undone.`
                                 : "This action cannot be undone."}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
+
                     <AlertDialogFooter>
-                        <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+                        <AlertDialogCancel disabled={deleting}>
+                            Cancel
+                        </AlertDialogCancel>
+
                         <AlertDialogAction
                             onClick={(event) => {
                                 event.preventDefault();

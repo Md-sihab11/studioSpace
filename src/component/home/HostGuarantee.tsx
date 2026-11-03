@@ -117,7 +117,7 @@ const HostGuarantee = () => {
                     <div className="mt-9 flex flex-col gap-3 sm:flex-row">
                         <Link
                             href="/register"
-                            className="inline-flex items-center justify-center rounded-full bg-[#B7F36B] px-7 py-3.5 text-sm font-semibold text-black shadow-lg shadow-lime-500/20 transition-all duration-200 hover:bg-[#a5e653] hover:shadow-xl hover:shadow-lime-500/30 active:scale-[0.98]"
+                            className="inline-flex items-center justify-center rounded-full bg-primary text-primary-foreground px-7 py-3.5 text-sm font-semibold shadow-lg shadow-primary/20 transition-all duration-200 hover:bg-primary/90 hover:shadow-xl active:scale-[0.98]"
                         >
                             List your studio
                         </Link>

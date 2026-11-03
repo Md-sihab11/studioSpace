@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Clock, MapPin, Search, SlidersHorizontal, Star, Verified, X } from "lucide-react";
+import { ArrowRight, Aperture, Clock, MapPin, Search, SlidersHorizontal, Star, Verified, X, RefreshCw } from "lucide-react";
 import {
     Empty,
     EmptyContent,
@@ -12,103 +12,149 @@ import {
     EmptyMedia,
     EmptyTitle,
 } from "@/components/ui/empty";
+import { Skeleton } from "@/components/ui/skeleton";
 
-type Studio = {
-    id: string;
-    name: string;
+/** Where the StudioSpace backend serves the studio list from. */
+const STUDIOS_API = "https://studiospace-backend-oqeo.onrender.com/studios";
+
+/** The home page only surfaces the top six listings — /studios holds the rest. */
+const MAX_FEATURED_STUDIOS = 6;
+
+/** Document shape returned by GET /studios. */
+type RemoteStudio = {
+    _id: string;
+    title: string;
     category: string;
-    location: string;
-    image: string;
-    pricePerHour: number;
-    rating: number;
-    reviews: number;
-    features: string[];
+    hourlyRate: number;
+    maxCapacity?: number;
+    location?: string;
+    image?: string;
+    imageUrl?: string;
+    rating?: number;
+    reviews?: number;
+    amenities?: string[];
+    overview?: string;
 };
 
+/** Drops incomplete records (e.g. empty docs) so one bad row can't break the grid. */
+const isRenderable = (studio: RemoteStudio): boolean =>
+    Boolean(studio && studio._id && studio.title && Number.isFinite(studio.hourlyRate));
+
 /**
- * Presentation content for the homepage. When the studios API is wired up,
- * swap this array for a fetch — the card markup stays the same.
+ * Bare Unsplash photo URLs serve the multi-megabyte original, and `/_next/image`
+ * must download it within a hard 7s upstream timeout — a grid of them times out.
+ * Appending sizing params keeps each fetch ~100KB instead of ~6MB. URLs that
+ * already carry a `w` param (or aren't absolute) are passed through unchanged.
  */
-const FEATURED_STUDIOS: Studio[] = [
-    {
-        id: "loft-photo-studio",
-        name: "Loft Photo Studio",
-        category: "Photography",
-        location: "Arts District, Los Angeles",
-        image: "/studio/image1.png",
-        pricePerHour: 45,
-        rating: 4.9,
-        reviews: 128,
-        features: ["Softboxes", "Makeup area", "Wi-Fi"],
-    },
-    {
-        id: "neon-sound-stage",
-        name: "Neon Sound Stage",
-        category: "Film & Video",
-        location: "Studio City, CA",
-        image: "https://images.unsplash.com/photo-1601506521937-0121a7fc2a6b?auto=format&fit=crop&w=1080&q=80",
-        pricePerHour: 65,
-        rating: 4.8,
-        reviews: 96,
-        features: ["4K camera", "Lighting grid", "Cyc wall"],
-    },
-    {
-        id: "midnight-recording-suite",
-        name: "Midnight Recording Suite",
-        category: "Music",
-        location: "East Nashville, TN",
-        image: "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?auto=format&fit=crop&w=1080&q=80",
-        pricePerHour: 55,
-        rating: 5.0,
-        reviews: 74,
-        features: ["Analog console", "Iso booth", "Engineer on call"],
-    },
-    {
-        id: "sunlit-home-studio",
-        name: "Sunlit Home Studio",
-        category: "Music",
-        location: "Brooklyn, NY",
-        image: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?auto=format&fit=crop&w=1080&q=80",
-        pricePerHour: 35,
-        rating: 4.7,
-        reviews: 61,
-        features: ["Grand piano", "Backline", "Natural light"],
-    },
-    {
-        id: "the-podcast-loft",
-        name: "The Podcast Loft",
-        category: "Podcast",
-        location: "Wicker Park, Chicago",
-        image: "https://images.unsplash.com/photo-1590602847861-f357a9332bbc?auto=format&fit=crop&w=1080&q=80",
-        pricePerHour: 30,
-        rating: 4.9,
-        reviews: 152,
-        features: ["4-mic setup", "Acoustic treated", "4K cameras"],
-    },
-    {
-        id: "canvas-art-workshop",
-        name: "Canvas Art Workshop",
-        category: "Art",
-        location: "Capitol Hill, Seattle",
-        image: "https://images.unsplash.com/photo-1513364776144-60967b0f800f?auto=format&fit=crop&w=1080&q=80",
-        pricePerHour: 25,
-        rating: 4.8,
-        reviews: 43,
-        features: ["Easels", "Sink & cleanup", "Dry space"],
-    },
-];
+const optimizeImageUrl = (url: string): string => {
+    try {
+        const parsed = new URL(url);
+        if (parsed.hostname === "images.unsplash.com" && !parsed.searchParams.has("w")) {
+            parsed.searchParams.set("auto", "format");
+            parsed.searchParams.set("fit", "crop");
+            parsed.searchParams.set("w", "1200");
+            parsed.searchParams.set("q", "80");
+            return parsed.toString();
+        }
+    } catch {
+        // Relative or malformed URL — leave it for next/image to validate.
+    }
+    return url;
+};
 
-const ALL_CATEGORIES = ["All", ...Array.from(new Set(FEATURED_STUDIOS.map((s) => s.category)))];
+/** New listings store `image`; older seed documents store `imageUrl`. */
+const coverOf = (studio: RemoteStudio): string | undefined =>
+    studio.image ?? studio.imageUrl;
 
-/* ------------------------------------------------------------------ */
+/** next/image only accepts hosts whitelisted in next.config — use  elsewhere. */
+const isUnsplashUrl = (url: string | undefined): boolean => {
+    try {
+        return new URL(url ?? "").hostname === "images.unsplash.com";
+    } catch {
+        return false;
+    }
+};
+
+/** Map backend studio fields to the card's local shape. */
+const toCardStudio = (studio: RemoteStudio) => ({
+    id: studio._id,
+    name: studio.title,
+    category: studio.category,
+    location: studio.location ?? "Location not set",
+    image: coverOf(studio) ?? "",
+    pricePerHour: studio.hourlyRate,
+    rating: studio.rating ?? 0,
+    reviews: studio.reviews ?? 0,
+    features: studio.amenities ?? [],
+});
 
 const FeaturedStudios = () => {
+    const [studios, setStudios] = useState<RemoteStudio[]>([]);
+    const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
+    const [error, setError] = useState("");
     const [query, setQuery] = useState("");
     const [activeCategory, setActiveCategory] = useState("All");
+    /* Bumped by the retry button to re-run the fetch effect. */
+    const [reloadKey, setReloadKey] = useState(0);
+
+    useEffect(() => {
+        let cancelled = false;
+
+        (async () => {
+            try {
+                const res = await fetch(STUDIOS_API, {
+                    signal: AbortSignal.timeout(60_000),
+                });
+                if (!res.ok) {
+                    throw new Error(`The studios API responded with ${res.status}`);
+                }
+                const data: unknown = await res.json();
+                console.log("API working", data);
+                if (!Array.isArray(data)) {
+                    throw new Error("The studios API returned an unexpected payload");
+                }
+                if (!cancelled) {
+                    setStudios((data as RemoteStudio[]).filter(isRenderable));
+                    setStatus("ready");
+                }
+            } catch (cause) {
+                if (cancelled) return;
+                if (cause instanceof Error && cause.name === "TimeoutError") {
+                    setError("The backend did not respond within 60 seconds");
+                } else if (cause instanceof Error && cause.message) {
+                    setError(cause.message);
+                } else {
+                    setError("Could not reach the studios API");
+                }
+                setStatus("error");
+            }
+        })();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [reloadKey]);
+
+    /* Retry from the error state — event handlers may set state synchronously. */
+    const retry = () => {
+        setStatus("loading");
+        setReloadKey((key) => key + 1);
+    };
+
+    /* Derive categories from fetched data. */
+    const ALL_CATEGORIES = useMemo(() => {
+        const cats = new Set<string>(studios.map((s) => s.category).filter(Boolean));
+        return ["All", ...Array.from(cats)];
+    }, [studios]);
+
+    const cardStudios = useMemo(
+        () => studios.map(toCardStudio),
+        [studios]
+    );
 
     const filtered = useMemo(() => {
         const q = query.trim().toLowerCase();
-        return FEATURED_STUDIOS.filter((studio) => {
+        return cardStudios.filter((studio) => {
             const matchesCategory =
                 activeCategory === "All" || studio.category === activeCategory;
             const matchesQuery =
@@ -118,8 +164,8 @@ const FeaturedStudios = () => {
                 studio.category.toLowerCase().includes(q) ||
                 studio.features.some((f) => f.toLowerCase().includes(q));
             return matchesCategory && matchesQuery;
-        });
-    }, [query, activeCategory]);
+        }).slice(0, MAX_FEATURED_STUDIOS);
+    }, [cardStudios, query, activeCategory]);
 
     const clearSearch = () => {
         setQuery("");
@@ -127,6 +173,13 @@ const FeaturedStudios = () => {
     };
 
     const hasActiveFilter = query.trim() !== "" || activeCategory !== "All";
+
+    const countLabel =
+        status === "loading"
+            ? "Loading studios…"
+            : status === "error"
+              ? "Studios unavailable"
+              : `Showing ${filtered.length} ${filtered.length === 1 ? "studio" : "studios"}`;
 
     return (
         <section id="featured" className="scroll-mt-24 bg-gray-50 py-16 dark:bg-[#0a0a0a] sm:py-20 lg:py-24">
@@ -146,7 +199,7 @@ const FeaturedStudios = () => {
                         </p>
                     </div>
                     <Link
-                        href="/#categories"
+                        href="/studios"
                         className="group inline-flex w-fit items-center gap-1.5 text-sm font-semibold text-teal-700 transition-colors hover:text-teal-800 dark:text-sky-400 dark:hover:text-sky-300"
                     >
                         Browse all studios
@@ -217,8 +270,55 @@ const FeaturedStudios = () => {
                     </p>
                 )}
 
-                {/* Studio grid or empty state */}
-                {filtered.length > 0 ? (
+                {/* Studio grid or empty or loading or error */}
+                {status === "loading" ? (
+                    <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                        {Array.from({ length: 6 }).map((_, index) => (
+                            <div
+                                key={index}
+                                className="overflow-hidden rounded-3xl border border-gray-200 bg-white dark:border-white/10 dark:bg-[#131313]"
+                            >
+                                <div className="h-56 bg-gray-200 dark:bg-[#1a1a1a]">
+                                    <Skeleton className="h-full w-full" />
+                                </div>
+                                <div className="flex flex-1 flex-col p-5">
+                                    <Skeleton className="h-4 w-1/2 mb-2" />
+                                    <Skeleton className="h-3 w-full mb-4" />
+                                    <Skeleton className="h-3 w-2/3 mb-2" />
+                                    <Skeleton className="h-3 w-1/3 mb-6" />
+                                    <Skeleton className="h-9 w-full mt-auto" />
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                ) : status === "error" ? (
+                    <div className="mt-10">
+                        <Empty className="border border-dashed py-16">
+                            <EmptyHeader>
+                                <EmptyMedia variant="icon" className="size-14 rounded-2xl">
+                                    <RefreshCw className="size-7" strokeWidth={1.5} />
+                                </EmptyMedia>
+                                <EmptyTitle className="text-lg font-semibold">
+                                    Couldn&apos;t load studios
+                                </EmptyTitle>
+                                <EmptyDescription>
+                                    {error}. Free Render services sleep when idle, so the first
+                                    request can take up to a minute.
+                                </EmptyDescription>
+                            </EmptyHeader>
+                            <EmptyContent>
+                                <button
+                                    type="button"
+                                    onClick={retry}
+                                    className="inline-flex items-center gap-2 rounded-full bg-teal-600 px-6 py-2.5 text-sm font-semibold text-white shadow-md shadow-teal-600/25 transition-all duration-200 hover:bg-teal-700 hover:shadow-lg active:scale-[0.98] dark:bg-sky-500 dark:shadow-sky-500/25 dark:hover:bg-sky-600"
+                                >
+                                    <RefreshCw className="size-4" />
+                                    Try again
+                                </button>
+                            </EmptyContent>
+                        </Empty>
+                    </div>
+                ) : filtered.length > 0 ? (
                     <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                         {filtered.map((studio) => (
                             <Link
@@ -228,13 +328,28 @@ const FeaturedStudios = () => {
                             >
                                 {/* Image */}
                                 <div className="relative h-56 w-full overflow-hidden">
-                                    <Image
-                                        src={studio.image}
-                                        alt={studio.name}
-                                        fill
-                                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                                        className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
-                                    />
+                                    {studio.image ? (
+                                        isUnsplashUrl(studio.image) ? (
+                                            <Image
+                                                src={optimizeImageUrl(studio.image)}
+                                                alt={studio.name}
+                                                fill
+                                                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                                                className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+                                            />
+                                        ) : (
+                                            // eslint-disable-next-line @next/next/no-img-element
+                                            <img
+                                                src={studio.image}
+                                                alt={studio.name}
+                                                className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+                                            />
+                                        )
+                                    ) : (
+                                        <span className="absolute inset-0 flex items-center justify-center text-muted-foreground">
+                                            <Aperture className="size-10" strokeWidth={1.5} />
+                                        </span>
+                                    )}
                                     <div className="absolute inset-x-0 top-0 flex items-start justify-between p-4">
                                         <span className="rounded-full bg-black/55 px-3 py-1 text-xs font-semibold text-white backdrop-blur-md">
                                             {studio.category}

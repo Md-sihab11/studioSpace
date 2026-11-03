@@ -9,10 +9,11 @@ import {
     MapPin,
     RefreshCw,
     Search,
-    Tag,
+    Star,
     WifiOff,
 } from "lucide-react";
 import { cn } from "cn";
+import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
@@ -37,7 +38,10 @@ type RemoteStudio = {
     hourlyRate: number;
     maxCapacity?: number;
     location?: string;
+    image?: string;
     imageUrl?: string;
+    rating?: number;
+    reviews?: number;
     amenities?: string[];
     overview?: string;
 };
@@ -68,6 +72,19 @@ const optimizeImageUrl = (url: string): string => {
     return url;
 };
 
+/** New listings store `image`; older seed documents store `imageUrl`. */
+const coverOf = (studio: RemoteStudio): string | undefined =>
+    studio.image ?? studio.imageUrl;
+
+/** next/image only accepts hosts whitelisted in next.config — use <img> elsewhere. */
+const isUnsplashUrl = (url: string | undefined): boolean => {
+    try {
+        return new URL(url ?? "").hostname === "images.unsplash.com";
+    } catch {
+        return false;
+    }
+};
+
 /**
  * /studios — "Explore All Studios".
  *
@@ -90,13 +107,14 @@ const StudiosPage = () => {
         // effect body itself never calls setState synchronously.
         (async () => {
             try {
-                const response = await fetch(STUDIOS_API, {
+                const res = await fetch(STUDIOS_API, {
                     signal: AbortSignal.timeout(60_000),
                 });
-                if (!response.ok) {
-                    throw new Error(`The studios API responded with ${response.status}`);
+                if (!res.ok) {
+                    throw new Error(`The studios API responded with ${res.status}`);
                 }
-                const data: unknown = await response.json();
+                const data: unknown = await res.json();
+                console.log("API working", data);
                 if (!Array.isArray(data)) {
                     throw new Error("The studios API returned an unexpected payload");
                 }
@@ -146,8 +164,8 @@ const StudiosPage = () => {
         status === "loading"
             ? "Loading studios…"
             : status === "error"
-              ? "Studios unavailable"
-              : `Showing ${filtered.length} ${filtered.length === 1 ? "studio" : "studios"}`;
+                ? "Studios unavailable"
+                : `Showing ${filtered.length} ${filtered.length === 1 ? "studio" : "studios"}`;
 
     return (
         <section className="mx-auto w-full max-w-7xl px-4 pt-10 pb-16 sm:px-6 lg:px-10">
@@ -226,80 +244,105 @@ const StudiosPage = () => {
             ) : filtered.length > 0 ? (
                 /* Studio grid — rendered only from the fetched data */
                 <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                    {filtered.map((studio) => (
-                        <Card
-                            key={studio._id}
-                            className="group relative gap-0 p-0 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl hover:shadow-black/5 hover:ring-foreground/20"
-                        >
-                            {/* Image */}
-                            <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted">
-                                {studio.imageUrl ? (
-                                    <Image
-                                        src={optimizeImageUrl(studio.imageUrl)}
-                                        alt={studio.title}
-                                        fill
-                                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                                        className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-                                    />
-                                ) : (
-                                    <span className="absolute inset-0 flex items-center justify-center text-muted-foreground">
-                                        <Aperture className="size-10" strokeWidth={1.5} />
-                                    </span>
-                                )}
-                            </div>
+                    {filtered.map((studio) => {
+                        const cover = coverOf(studio);
+                        return (
+                            <Card
+                                key={studio._id}
+                                className="group relative gap-0 p-0 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl hover:shadow-black/5 hover:ring-foreground/20"
+                            >
+                                {/* Image — unsplash URLs go through next/image (with the
+                                size optimizer above); any other host uses a plain <img>
+                                because next/image throws for unconfigured hosts. */}
+                                <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted">
+                                    {cover ? (
+                                        isUnsplashUrl(cover) ? (
+                                            <Image
+                                                src={optimizeImageUrl(cover)}
+                                                alt={studio.title}
+                                                fill
+                                                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                                                className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                                            />
+                                        ) : (
+                                            // eslint-disable-next-line @next/next/no-img-element
+                                            <img
+                                                src={cover}
+                                                alt={studio.title}
+                                                className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                                            />
+                                        )
+                                    ) : (
+                                        <span className="absolute inset-0 flex items-center justify-center text-muted-foreground">
+                                            <Aperture className="size-10" strokeWidth={1.5} />
+                                        </span>
+                                    )}
 
-                            {/* Body: location → title + price → category + capacity → CTA */}
-                            <div className="flex flex-1 flex-col gap-3.5 p-5">
-                                <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                                    <MapPin className="size-3.5 shrink-0" />
-                                    {studio.location}
-                                </p>
-
-                                <div className="flex items-start justify-between gap-3">
-                                    <h2 className="text-lg leading-snug font-semibold">
-                                        {studio.title}
-                                    </h2>
-                                    <div className="shrink-0 text-right">
-                                        <p className="text-lg leading-snug font-semibold">
-                                            ${studio.hourlyRate}
-                                        </p>
-                                        <p className="text-xs text-muted-foreground">
-                                            / hour
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                                    <Tag className="size-3.5 shrink-0" />
-                                    <span className="truncate">{studio.category}</span>
-                                    {typeof studio.maxCapacity === "number" &&
-                                        studio.maxCapacity > 0 && (
-                                            <span className="truncate">
-                                                · Up to {studio.maxCapacity} people
+                                    {/* Rating pill — listings with no rating show "New" */}
+                                    <span className="absolute right-3 bottom-3 inline-flex items-center gap-1 rounded-full bg-black/55 px-2.5 py-1 text-xs font-semibold text-white backdrop-blur-md">
+                                        <Star className="size-3 fill-[#B7F36B] text-[#B7F36B]" />
+                                        {typeof studio.rating === "number" && studio.rating > 0
+                                            ? studio.rating.toFixed(1)
+                                            : "New"}
+                                        {typeof studio.rating === "number" && studio.rating > 0 && (
+                                            <span className="font-normal text-white/70">
+                                                ({studio.reviews ?? 0})
                                             </span>
                                         )}
-                                </p>
+                                    </span>
+                                </div>
 
-                                {/* Decorative CTA — the stretched link below handles navigation */}
-                                <span
-                                    className={cn(
-                                        buttonVariants({ variant: "outline" }),
-                                        "mt-auto h-9 w-full gap-2 text-sm font-semibold group-hover:bg-muted group-hover:text-foreground"
-                                    )}
-                                >
-                                    View Details
-                                    <ArrowUpRight className="size-4" />
-                                </span>
-                            </div>
+                                {/* Body: location → title + price → category + capacity → CTA */}
+                                <div className="flex flex-1 flex-col gap-3.5 p-5">
+                                    <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                                        <MapPin className="size-3.5 shrink-0" />
+                                        {studio.location}
+                                    </p>
 
-                            {/* Whole-card link */}
-                            <Link
-                                href={`/studios/${studio._id}`}
-                                aria-label={`View ${studio.title}`}
-                                className="absolute inset-0 z-10 rounded-xl focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset focus-visible:outline-none"
-                            />
-                        </Card>
-                    ))}
+                                    <div className="flex items-start justify-between gap-3">
+                                        <h2 className="text-lg leading-snug font-semibold">
+                                            {studio.title}
+                                        </h2>
+                                        <div className="shrink-0 text-right">
+                                            <p className="text-lg leading-snug font-semibold">
+                                                ${studio.hourlyRate}
+                                            </p>
+                                            <p className="text-xs text-muted-foreground">
+                                                / hour
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <p className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                                        <Badge variant="secondary" className="truncate">
+                                            {studio.category}
+                                        </Badge>
+                                        {typeof studio.maxCapacity === "number" &&
+                                            studio.maxCapacity > 0 && (
+                                                <span className="truncate">
+                                                    Up to {studio.maxCapacity} people
+                                                </span>
+                                            )}
+                                    </p>
+
+                                    {/* Decorative CTA — the stretched link below handles navigation */}
+                                    <span
+                                        className="mt-auto inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-[#e63946] text-sm font-semibold text-white shadow-md shadow-[#e63946]/20 transition-all duration-300 hover:bg-[#ff4757] group-hover:bg-[#ff4757] group-hover:shadow-lg group-hover:shadow-[#e63946]/30"
+                                    >
+                                        View Details
+                                        <ArrowUpRight className="size-4 transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-0.5" />
+                                    </span>
+                                </div>
+
+                                {/* Whole-card link */}
+                                <Link
+                                    href={`/studios/${studio._id}`}
+                                    aria-label={`View ${studio.title}`}
+                                    className="absolute inset-0 z-10 rounded-xl focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset focus-visible:outline-none"
+                                />
+                            </Card>
+                        );
+                    })}
                 </div>
             ) : (
                 /* No matches for the search */

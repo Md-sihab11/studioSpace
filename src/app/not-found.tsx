@@ -65,7 +65,7 @@ const NotFound = () => {
                 {/* Return Home */}
                 <Link
                     href="/"
-                    className="mt-9 inline-flex items-center gap-2 rounded-full bg-[#B7F36B] px-8 py-4 text-sm font-bold text-black shadow-lg shadow-lime-500/10 transition-all duration-300 hover:-translate-y-1 hover:bg-lime-400 hover:shadow-xl"
+                    className="mt-9 inline-flex items-center gap-2 rounded-full bg-primary text-primary-foreground px-8 py-4 text-sm font-bold shadow-lg shadow-primary/10 transition-all duration-300 hover:-translate-y-1 hover:bg-primary/90 hover:shadow-xl"
                 >
                     <ArrowLeft className="size-5" />
                     Return to Home
