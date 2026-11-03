@@ -1,18 +1,38 @@
-'use client'
+'use client';
+
 import { authClient } from '@/lib/auth-client';
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/lib/use-toast';
+import { Check, X } from 'lucide-react';
 
 const RegisterPage = () => {
     const router = useRouter();
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
+    const [password, setPassword] = useState("");
     const { toast } = useToast();
+
+    // Real-time password criteria
+    const hasMinLength = password.length >= 6;
+    const hasUppercase = /[A-Z]/.test(password);
+    const hasLowercase = /[a-z]/.test(password);
+    const isPasswordValid = hasMinLength && hasUppercase && hasLowercase;
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setError(null);
+
+        if (!isPasswordValid) {
+            setError("Password must be at least 6 characters and contain uppercase and lowercase letters.");
+            toast({
+                title: "Invalid password",
+                description: "Please satisfy all password requirements.",
+                type: "error",
+            });
+            return;
+        }
+
         setLoading(true);
 
         const formData = new FormData(e.currentTarget);
@@ -151,27 +171,105 @@ const RegisterPage = () => {
                                 type="password"
                                 name="password"
                                 required
-                                minLength={6}
-                                pattern="(?=.*[a-z])(?=.*[A-Z]).{6,}"
-                                title="Password must contain at least 6 characters, one uppercase and one lowercase letter."
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
                                 className="bg-transparent border-none outline-none w-full text-gray-900 dark:text-[#d3d3d3] placeholder:text-gray-500 dark:placeholder:text-gray-400"
                                 placeholder="Password"
                                 autoComplete="new-password"
                             />
                         </div>
 
-                        {/* Password Instruction */}
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
-                            Password must contain at least 6 characters, including uppercase and lowercase letters.
-                        </p>
+                        {/* Dynamic Password Validation Feedback */}
+                        <div className="rounded-2xl border border-gray-200 bg-gray-50/70 p-3.5 dark:border-white/10 dark:bg-[#202020]/70 text-xs flex flex-col gap-2">
+                            <p className="font-semibold text-gray-700 dark:text-gray-300">
+                                Password Requirements:
+                            </p>
+
+                            <div className="flex flex-col gap-1.5">
+                                <div className="flex items-center gap-2">
+                                    <span
+                                        className={`flex size-4 items-center justify-center rounded-full transition-colors ${
+                                            hasMinLength
+                                                ? "bg-emerald-500 text-white"
+                                                : "bg-gray-200 text-gray-400 dark:bg-white/10 dark:text-gray-500"
+                                        }`}
+                                    >
+                                        {hasMinLength ? (
+                                            <Check className="size-3" strokeWidth={3} />
+                                        ) : (
+                                            <X className="size-2.5" />
+                                        )}
+                                    </span>
+                                    <span
+                                        className={`transition-colors ${
+                                            hasMinLength
+                                                ? "text-emerald-600 dark:text-emerald-400 font-medium"
+                                                : "text-gray-500 dark:text-gray-400"
+                                        }`}
+                                    >
+                                        At least 6 characters
+                                    </span>
+                                </div>
+
+                                <div className="flex items-center gap-2">
+                                    <span
+                                        className={`flex size-4 items-center justify-center rounded-full transition-colors ${
+                                            hasUppercase
+                                                ? "bg-emerald-500 text-white"
+                                                : "bg-gray-200 text-gray-400 dark:bg-white/10 dark:text-gray-500"
+                                        }`}
+                                    >
+                                        {hasUppercase ? (
+                                            <Check className="size-3" strokeWidth={3} />
+                                        ) : (
+                                            <X className="size-2.5" />
+                                        )}
+                                    </span>
+                                    <span
+                                        className={`transition-colors ${
+                                            hasUppercase
+                                                ? "text-emerald-600 dark:text-emerald-400 font-medium"
+                                                : "text-gray-500 dark:text-gray-400"
+                                        }`}
+                                    >
+                                        At least one uppercase letter (A-Z)
+                                    </span>
+                                </div>
+
+                                <div className="flex items-center gap-2">
+                                    <span
+                                        className={`flex size-4 items-center justify-center rounded-full transition-colors ${
+                                            hasLowercase
+                                                ? "bg-emerald-500 text-white"
+                                                : "bg-gray-200 text-gray-400 dark:bg-white/10 dark:text-gray-500"
+                                        }`}
+                                    >
+                                        {hasLowercase ? (
+                                            <Check className="size-3" strokeWidth={3} />
+                                        ) : (
+                                            <X className="size-2.5" />
+                                        )}
+                                    </span>
+                                    <span
+                                        className={`transition-colors ${
+                                            hasLowercase
+                                                ? "text-emerald-600 dark:text-emerald-400 font-medium"
+                                                : "text-gray-500 dark:text-gray-400"
+                                        }`}
+                                    >
+                                        At least one lowercase letter (a-z)
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
 
                         {/* Register Button */}
-                        <div className="flex mt-4">
+                        <div className="flex mt-2">
 
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="w-full p-3 rounded-[8px] border border-gray-300 dark:border-transparent outline-none transition-all duration-300 bg-gray-200 dark:bg-[#252525] text-gray-900 dark:text-white hover:bg-gray-300 dark:hover:bg-black disabled:opacity-60 disabled:cursor-not-allowed"
+                                className="w-full p-3 rounded-[8px] border border-gray-300 dark:border-transparent outline-none transition-all duration-300 bg-gray-200 dark:bg-[#252525] text-gray-900 dark:text-white hover:bg-gray-300 dark:hover:bg-black disabled:opacity-60 disabled:cursor-not-allowed font-medium"
                             >
                                 {loading ? "Creating account..." : "Register"}
                             </button>

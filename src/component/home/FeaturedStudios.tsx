@@ -40,12 +40,6 @@ type RemoteStudio = {
 const isRenderable = (studio: RemoteStudio): boolean =>
     Boolean(studio && studio._id && studio.title && Number.isFinite(studio.hourlyRate));
 
-/**
- * Bare Unsplash photo URLs serve the multi-megabyte original, and `/_next/image`
- * must download it within a hard 7s upstream timeout — a grid of them times out.
- * Appending sizing params keeps each fetch ~100KB instead of ~6MB. URLs that
- * already carry a `w` param (or aren't absolute) are passed through unchanged.
- */
 const optimizeImageUrl = (url: string): string => {
     try {
         const parsed = new URL(url);
@@ -401,12 +395,11 @@ const FeaturedStudios = () => {
                                             Available today
                                         </span>
                                     </div>
-                                    <Link
-                                        href="/#featured"
-                                        className="inline-flex items-center justify-center rounded-full bg-[#e63946] px-8 py-3.5 text-sm font-semibold text-white shadow-lg shadow-[#e63946]/30 transition-all duration-200 hover:bg-[#ff4757] hover:shadow-xl hover:shadow-[#e63946]/40 active:scale-[0.98]"
+                                    <span
+                                        className="inline-flex items-center justify-center rounded-full bg-[#e63946] px-8 py-3.5 text-sm font-semibold text-white shadow-lg shadow-[#e63946]/30 transition-all duration-200 group-hover:bg-[#ff4757] group-hover:shadow-xl group-hover:shadow-[#e63946]/40 active:scale-[0.98]"
                                     >
                                         View Details
-                                    </Link>
+                                    </span>
                                 </div>
                             </Link>
                         ))}

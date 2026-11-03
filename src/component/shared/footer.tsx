@@ -1,20 +1,36 @@
 "use client";
 
+import React, { useState } from "react";
 import Link from "next/link";
+import { useToast } from "@/lib/use-toast";
+import { Check, Mail } from "lucide-react";
 
 const Footer = () => {
+    const [email, setEmail] = useState("");
+    const [subscribed, setSubscribed] = useState(false);
+    const { toast } = useToast();
+
     const handleSubscribe = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        if (!email.trim()) return;
+
+        setSubscribed(true);
+        toast({
+            title: "Subscribed!",
+            description: "Thank you for subscribing to StudioSpace. Check your inbox soon!",
+            type: "success",
+        });
+        setEmail("");
     };
 
     return (
         <footer className="border-t border-white/10 bg-[#0a0a0a] text-white">
             <div className="mx-auto max-w-7xl px-6 py-14 sm:px-8 lg:px-10">
 
-                <div className="grid grid-cols-1 gap-12 sm:grid-cols-2 lg:grid-cols-4 lg:gap-16">
+                <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 lg:gap-10">
 
                     {/* Brand */}
-                    <div className="lg:col-span-1">
+                    <div className="sm:col-span-2 lg:col-span-1">
                         <Link
                             href="/"
                             className="flex shrink-0 items-center gap-2.5"
@@ -24,60 +40,68 @@ const Footer = () => {
                                 <circle cx="8" cy="12" r="5" />
                                 <circle cx="16" cy="12" r="5" />
                             </svg>
-                            <span className="text-3xl font-bold tracking-tight text-white">
+                            <span className="text-2xl font-bold tracking-tight text-white">
                                 StudioSpace
                             </span>
                         </Link>
                         <p className="mt-4 max-w-xs text-sm leading-6 text-gray-400">
-                            Your gateway to extraordinary creative spaces around the world.
+                            The premier marketplace for creators to discover and book verified creative studios by the hour.
                         </p>
                     </div>
 
-                    {/* Newsletter */}
+                    {/* Studio Categories */}
                     <div>
-                        <h4 className="mb-5 text-base font-semibold tracking-wide uppercase text-white">
-                            NEWSLETTER
+                        <h4 className="mb-5 text-sm font-semibold tracking-wider uppercase text-white">
+                            CATEGORIES
                         </h4>
-                        <p className="mb-5 text-sm leading-6 text-gray-400">
-                            Subscribe for exclusive studio deals and inspiration.
-                        </p>
-                        <form
-                            id="nl"
-                            onSubmit={handleSubscribe}
-                            className="flex items-center gap-2"
-                        >
-                            <input
-                                type="email"
-                                name="email"
-                                required
-                                placeholder="Enter email"
-                                aria-label="Email address"
-                                className="flex-1 rounded-lg border border-gray-700 bg-[#111827] px-4 py-3 text-sm text-white outline-none transition-all placeholder:text-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                            />
-                            <button
-                                type="submit"
-                                className="flex items-center justify-center rounded-lg bg-blue-500 text-white px-4 py-3 shadow-md shadow-blue-500/30 transition-all hover:bg-blue-600 hover:shadow-lg active:scale-[0.98]"
-                            >
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                                    <path d="M22 2l-11 13" />
-                                    <path d="M22 2l-11 13" />
-                                    <path d="M22 2l-2.2 2" />
-                                    <path d="M17.8 22L22 17.8" />
-                                    <path d="M22 2l-11 13" />
-                                </svg>
-                            </button>
-                        </form>
+                        <ul className="space-y-3 text-sm text-gray-400">
+                            <li>
+                                <Link href="/studios?category=Photo%20Studio" className="transition-colors hover:text-white">
+                                    Photo Studios
+                                </Link>
+                            </li>
+                            <li>
+                                <Link href="/studios?category=Film%20Stage" className="transition-colors hover:text-white">
+                                    Film &amp; Production
+                                </Link>
+                            </li>
+                            <li>
+                                <Link href="/studios?category=Podcast%20Lounge" className="transition-colors hover:text-white">
+                                    Podcast Lounges
+                                </Link>
+                            </li>
+                            <li>
+                                <Link href="/studios?category=Music%20Suite" className="transition-colors hover:text-white">
+                                    Music Suites
+                                </Link>
+                            </li>
+                            <li>
+                                <Link href="/studios?category=Art%20Studio" className="transition-colors hover:text-white">
+                                    Art Workshops
+                                </Link>
+                            </li>
+                            <li>
+                                <Link href="/studios?category=Rehearsal%20Space" className="transition-colors hover:text-white">
+                                    Rehearsal Spaces
+                                </Link>
+                            </li>
+                        </ul>
                     </div>
 
                     {/* Quick Links */}
                     <div>
-                        <h4 className="mb-5 text-base font-semibold tracking-wide uppercase text-white">
+                        <h4 className="mb-5 text-sm font-semibold tracking-wider uppercase text-white">
                             QUICK LINKS
                         </h4>
                         <ul className="space-y-3 text-sm text-gray-400">
                             <li>
-                                <Link href="/#featured" className="transition-colors hover:text-white">
+                                <Link href="/" className="transition-colors hover:text-white">
                                     Home
+                                </Link>
+                            </li>
+                            <li>
+                                <Link href="/studios" className="transition-colors hover:text-white">
+                                    Explore Studios
                                 </Link>
                             </li>
                             <li>
@@ -86,7 +110,7 @@ const Footer = () => {
                                 </Link>
                             </li>
                             <li>
-                                <Link href="/#trust" className="transition-colors hover:text-white">
+                                <Link href="/add-studio" className="transition-colors hover:text-white">
                                     Host Your Space
                                 </Link>
                             </li>
@@ -100,7 +124,7 @@ const Footer = () => {
 
                     {/* Support */}
                     <div>
-                        <h4 className="mb-5 text-base font-semibold tracking-wide uppercase text-white">
+                        <h4 className="mb-5 text-sm font-semibold tracking-wider uppercase text-white">
                             SUPPORT
                         </h4>
                         <ul className="space-y-3 text-sm text-gray-400">
@@ -119,24 +143,59 @@ const Footer = () => {
                                     Privacy Policy
                                 </a>
                             </li>
+                            <li className="pt-2 text-xs text-gray-500">
+                                📞 +1 (786) 901-1622
+                            </li>
+                            <li className="text-xs text-gray-500">
+                                ✉️ info@studiospace.com
+                            </li>
                         </ul>
                     </div>
 
-                    {/* Contact Us */}
+                    {/* Newsletter */}
                     <div>
-                        <h4 className="mb-5 text-base font-semibold tracking-wide uppercase text-white">
-                            CONTACT US
+                        <h4 className="mb-5 text-sm font-semibold tracking-wider uppercase text-white">
+                            NEWSLETTER
                         </h4>
-                        <ul className="space-y-3 text-sm text-gray-400">
-                            <li className="flex items-center gap-2">
-                                <svg className="size-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
-                                786 901 1622
-                            </li>
-                            <li className="flex items-center gap-2">
-                                <svg className="size-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
-                                info@studiospace.com
-                            </li>
-                        </ul>
+                        <p className="mb-4 text-xs leading-5 text-gray-400">
+                            Subscribe for exclusive studio promotions and creative inspirations.
+                        </p>
+
+                        {subscribed ? (
+                            <div className="flex items-center gap-2 rounded-lg bg-emerald-950/60 border border-emerald-500/40 p-3 text-xs text-emerald-400">
+                                <Check className="size-4 shrink-0 text-emerald-400" />
+                                <span>You are subscribed to studio updates!</span>
+                            </div>
+                        ) : (
+                            <form
+                                id="nl"
+                                onSubmit={handleSubscribe}
+                                className="flex flex-col gap-2"
+                            >
+                                <div className="flex items-center gap-2">
+                                    <input
+                                        type="email"
+                                        name="email"
+                                        required
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        placeholder="Enter your email"
+                                        aria-label="Email address"
+                                        className="w-full rounded-lg border border-gray-700 bg-[#111827] px-3.5 py-2.5 text-xs text-white outline-none transition-all placeholder:text-gray-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                                    />
+                                    <button
+                                        type="submit"
+                                        aria-label="Subscribe to newsletter"
+                                        className="flex shrink-0 items-center justify-center rounded-lg bg-blue-500 px-3.5 py-2.5 text-white shadow-md shadow-blue-500/30 transition-all hover:bg-blue-600 hover:shadow-lg active:scale-[0.98]"
+                                    >
+                                        <Mail className="size-4" />
+                                    </button>
+                                </div>
+                                <span className="text-[11px] text-gray-500">
+                                    Zero spam. Unsubscribe anytime.
+                                </span>
+                            </form>
+                        )}
                     </div>
 
                 </div>

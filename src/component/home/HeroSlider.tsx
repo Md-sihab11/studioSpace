@@ -161,17 +161,17 @@ const HeroSlider = () => {
 
                                     <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                                         <Link
-                                            href="/#featured"
+                                            href="/studios"
                                             className="inline-flex items-center justify-center rounded-full bg-[#e63946] px-8 py-3.5 text-sm font-semibold text-white shadow-lg shadow-[#e63946]/30 transition-all duration-200 hover:bg-[#ff4757] hover:shadow-xl hover:shadow-[#e63946]/40 active:scale-[0.98]"
                                         >
                                             Explore Studios
                                         </Link>
-                                        {/* <Link
-                                            href="/#trust"
-                                            className="inline-flex items-center justify-center rounded-full bg-[#e63946]/90 px-8 py-3.5 text-sm font-semibold text-white shadow-lg shadow-[#e63946]/20 backdrop-blur-sm transition-all duration-200 hover:bg-[#c72c39] hover:shadow-xl hover:shadow-[#e63946]/40 active:scale-[0.98]"
+                                        <Link
+                                            href="/add-studio"
+                                            className="inline-flex items-center justify-center rounded-full border border-white/25 bg-white/10 px-8 py-3.5 text-sm font-semibold text-white shadow-lg backdrop-blur-md transition-all duration-200 hover:border-white/50 hover:bg-white/20 hover:shadow-xl active:scale-[0.98]"
                                         >
                                             Host Your Space
-                                        </Link> */}
+                                        </Link>
                                     </div>
                                 </div>
                             </div>

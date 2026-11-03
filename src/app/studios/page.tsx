@@ -1,20 +1,22 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { Suspense, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import {
     Aperture,
     ArrowUpRight,
     MapPin,
     RefreshCw,
     Search,
+    SlidersHorizontal,
     Star,
     WifiOff,
+    X,
 } from "lucide-react";
-import { cn } from "cn";
 import { Badge } from "@/components/ui/badge";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
     Empty,
@@ -85,18 +87,24 @@ const isUnsplashUrl = (url: string | undefined): boolean => {
     }
 };
 
-/**
- * /studios — Explore All Studios.
- *
- * Every card renders data fetched from the backend.
- * The fetch runs client-side so the route never blocks on Render cold start.
- */
-const StudiosPage = () => {
+/** Inner explore content that uses search params safely within Suspense. */
+const StudiosContent = () => {
+    const searchParams = useSearchParams();
+    const urlCategory = searchParams.get("category") || "All";
+
     const [studios, setStudios] = useState<RemoteStudio[]>([]);
     const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
     const [error, setError] = useState("");
     const [query, setQuery] = useState("");
+    const [activeCategory, setActiveCategory] = useState(urlCategory);
     const [reloadKey, setReloadKey] = useState(0);
+
+    // Sync state if URL query param changes
+    useEffect(() => {
+        if (urlCategory) {
+            setActiveCategory(urlCategory);
+        }
+    }, [urlCategory]);
 
     useEffect(() => {
         let cancelled = false;
@@ -151,22 +159,43 @@ const StudiosPage = () => {
         setReloadKey((key) => key + 1);
     };
 
+    /* Dynamically derive categories from fetched data */
+    const ALL_CATEGORIES = useMemo(() => {
+        const cats = new Set<string>();
+        studios.forEach((s) => {
+            if (s.category?.trim()) cats.add(s.category.trim());
+        });
+        return ["All", ...Array.from(cats)];
+    }, [studios]);
+
     const filtered = useMemo(() => {
         const q = query.trim().toLowerCase();
 
-        if (!q) return studios;
+        return studios.filter((studio) => {
+            const matchesCategory =
+                activeCategory === "All" ||
+                (studio.category ?? "").toLowerCase() === activeCategory.toLowerCase();
 
-        return studios.filter(
-            (studio) =>
+            const matchesQuery =
+                !q ||
                 studio.title.toLowerCase().includes(q) ||
                 (studio.location ?? "").toLowerCase().includes(q) ||
                 (studio.category ?? "").toLowerCase().includes(q) ||
                 (studio.amenities ?? []).some((item) =>
                     item.toLowerCase().includes(q)
                 ) ||
-                (studio.overview ?? "").toLowerCase().includes(q)
-        );
-    }, [studios, query]);
+                (studio.overview ?? "").toLowerCase().includes(q);
+
+            return matchesCategory && matchesQuery;
+        });
+    }, [studios, query, activeCategory]);
+
+    const clearFilters = () => {
+        setQuery("");
+        setActiveCategory("All");
+    };
+
+    const hasActiveFilter = query.trim() !== "" || activeCategory !== "All";
 
     const countLabel =
         status === "loading"
@@ -186,7 +215,7 @@ const StudiosPage = () => {
                 Find your perfect creative space.
             </p>
 
-            {/* Result count + search */}
+            {/* Search & Results Bar */}
             <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <p aria-live="polite" className="text-sm text-muted-foreground">
                     {countLabel}
@@ -203,8 +232,76 @@ const StudiosPage = () => {
                         aria-label="Search studios"
                         className="h-9 px-9"
                     />
+
+                    {query && (
+                        <button
+                            type="button"
+                            aria-label="Clear search input"
+                            onClick={() => setQuery("")}
+                            className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-full p-1 text-muted-foreground hover:text-foreground"
+                        >
+                            <X className="size-3.5" />
+                        </button>
+                    )}
                 </div>
             </div>
+
+            {/* Category Filter Pills */}
+            {status !== "loading" && ALL_CATEGORIES.length > 1 && (
+                <div
+                    role="group"
+                    aria-label="Filter studios by category"
+                    className="mt-6 flex items-center gap-2 overflow-x-auto pb-1"
+                >
+                    <SlidersHorizontal className="size-4 shrink-0 text-muted-foreground" />
+                    {ALL_CATEGORIES.map((cat) => {
+                        const isActive =
+                            activeCategory.toLowerCase() === cat.toLowerCase();
+
+                        return (
+                            <button
+                                key={cat}
+                                type="button"
+                                onClick={() => setActiveCategory(cat)}
+                                aria-pressed={isActive}
+                                className={`shrink-0 rounded-full px-4 py-1.5 text-xs font-semibold transition-all duration-200 ${
+                                    isActive
+                                        ? "bg-primary text-primary-foreground shadow-sm shadow-primary/25"
+                                        : "border border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground"
+                                }`}
+                            >
+                                {cat}
+                            </button>
+                        );
+                    })}
+                </div>
+            )}
+
+            {/* Active filters summary */}
+            {hasActiveFilter && status === "ready" && (
+                <div className="mt-4 flex flex-wrap items-center justify-between gap-2 text-sm text-muted-foreground">
+                    <p>
+                        {filtered.length === 0
+                            ? "No matching studios"
+                            : `${filtered.length} studio${filtered.length !== 1 ? "s" : ""} found`}
+                        {activeCategory !== "All" && (
+                            <> in <span className="font-semibold text-foreground">{activeCategory}</span></>
+                        )}
+                        {query.trim() && (
+                            <> for &ldquo;<span className="font-semibold text-foreground">{query.trim()}</span>&rdquo;</>
+                        )}
+                    </p>
+
+                    <button
+                        type="button"
+                        onClick={clearFilters}
+                        className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
+                    >
+                        <X className="size-3.5" />
+                        Reset filters
+                    </button>
+                </div>
+            )}
 
             {status === "loading" ? (
                 /* Skeleton while the backend responds */
@@ -363,7 +460,7 @@ const StudiosPage = () => {
                     })}
                 </div>
             ) : (
-                /* No matches for the search */
+                /* No matches for the search and category filters */
                 <div className="mt-8">
                     <Empty className="border border-dashed py-16">
                         <EmptyHeader>
@@ -376,8 +473,9 @@ const StudiosPage = () => {
                             </EmptyTitle>
 
                             <EmptyDescription>
-                                Nothing matches &ldquo;{query.trim()}&rdquo;. Try another
-                                name, location or feature.
+                                {query.trim()
+                                    ? `Nothing matches "${query.trim()}"${activeCategory !== "All" ? ` in category ${activeCategory}` : ""}. Try another keyword or clear your filters.`
+                                    : `No studios currently found in category "${activeCategory}".`}
                             </EmptyDescription>
                         </EmptyHeader>
 
@@ -385,15 +483,39 @@ const StudiosPage = () => {
                             <Button
                                 type="button"
                                 variant="outline"
-                                onClick={() => setQuery("")}
+                                onClick={clearFilters}
                             >
-                                Clear search
+                                Clear filters
                             </Button>
                         </EmptyContent>
                     </Empty>
                 </div>
             )}
         </section>
+    );
+};
+
+/**
+ * /studios — Explore All Studios.
+ * Wrapped in Suspense to safely allow useSearchParams reading on client side.
+ */
+const StudiosPage = () => {
+    return (
+        <Suspense
+            fallback={
+                <section className="mx-auto w-full max-w-7xl px-4 pt-10 pb-16 sm:px-6 lg:px-10">
+                    <Skeleton className="h-10 w-64" />
+                    <Skeleton className="mt-3 h-5 w-48" />
+                    <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                        {Array.from({ length: 6 }).map((_, index) => (
+                            <Skeleton key={index} className="h-80 w-full rounded-xl" />
+                        ))}
+                    </div>
+                </section>
+            }
+        >
+            <StudiosContent />
+        </Suspense>
     );
 };
 

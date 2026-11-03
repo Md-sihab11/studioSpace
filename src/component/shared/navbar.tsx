@@ -376,7 +376,11 @@ const Navbar = () => {
                                     role="menu"
                                     className="absolute right-0 mt-2 w-60 overflow-hidden rounded-2xl border border-gray-200 bg-white p-2 shadow-2xl shadow-black/10 dark:border-white/10 dark:bg-[#141414]"
                                 >
-                                    <div className="border-b border-gray-100 px-3 py-2.5 dark:border-white/10">
+                                    <Link
+                                        href="/profile"
+                                        onClick={() => setProfileOpen(false)}
+                                        className="block border-b border-gray-100 px-3 py-2.5 transition-colors hover:bg-gray-50 dark:border-white/10 dark:hover:bg-white/5"
+                                    >
                                         <p className="truncate text-sm font-semibold text-gray-900 dark:text-white">
                                             {userName}
                                         </p>
@@ -386,7 +390,7 @@ const Navbar = () => {
                                                 {user.email}
                                             </p>
                                         )}
-                                    </div>
+                                    </Link>
 
                                     <Link
                                         href="/dashboard"
@@ -553,7 +557,11 @@ const Navbar = () => {
                         <div className="mt-6 flex flex-col gap-3 border-t border-gray-100 pt-6 dark:border-white/10">
                             {user ? (
                                 <>
-                                    <div className="mb-2 flex items-center gap-3">
+                                    <Link
+                                        href="/profile"
+                                        onClick={() => setMobileOpen(false)}
+                                        className="mb-2 flex items-center gap-3 rounded-2xl p-2 transition-colors hover:bg-gray-100 dark:hover:bg-white/5"
+                                    >
                                         <span className="flex size-10 items-center justify-center rounded-full bg-linear-to-br from-teal-600 to-blue-600 text-sm font-bold text-white">
                                             {initials || (
                                                 <User className="size-4" />
@@ -569,7 +577,7 @@ const Navbar = () => {
                                                 {user.email}
                                             </p>
                                         </div>
-                                    </div>
+                                    </Link>
 
                                     <Link
                                         href="/dashboard"
