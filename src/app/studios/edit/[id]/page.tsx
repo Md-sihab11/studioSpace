@@ -5,10 +5,13 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { ArrowLeft, Pencil } from "lucide-react";
 import { useToast } from "@/lib/use-toast";
+import { useSession } from "@/lib/auth-client";
 import type { Studio } from "@/lib/constants";
 import type { StudioFormValues } from "@/component/studio-form/StudioForm";
 import StudioForm from "@/component/studio-form/StudioForm";
+import RequireAuth from "@/component/auth/RequireAuth";
 import { Skeleton } from "@/components/ui/skeleton";
+import { API_BASE_URL } from "@/lib/constants";
 
 const toFormValues = (studio: Studio): Partial<StudioFormValues> => ({
     title: studio.title,
@@ -18,6 +21,7 @@ const toFormValues = (studio: Studio): Partial<StudioFormValues> => ({
     maxCapacity: String(studio.maxCapacity),
     location: studio.location,
     image: studio.image,
+    images: studio.images ?? [],
     amenities: studio.amenities ?? [],
     overview: studio.overview,
 });
@@ -31,10 +35,12 @@ const EditStudioPage = () => {
     const params = useParams<{ id: string }>();
     const id = params.id;
     const { toast } = useToast();
+    const { data: session } = useSession();
 
     const [initialValues, setInitialValues] = useState<Partial<StudioFormValues> | undefined>();
     const [loading, setLoading] = useState(true);
     const [notFound, setNotFound] = useState(false);
+    const [notAuthorized, setNotAuthorized] = useState(false);
 
     useEffect(() => {
         if (!id) return;
@@ -48,14 +54,14 @@ const EditStudioPage = () => {
                 // Primary: GET /studios/:id
                 try {
                     const res = await fetch(
-                        `https://studiospace-backend-oqeo.onrender.com/studios/${encodeURIComponent(id)}`,
+                        `${API_BASE_URL}/studios/${encodeURIComponent(id)}`,
                         {
                             signal: AbortSignal.timeout(60_000),
                         }
                     );
 
                     const data = await res.json().catch(() => null);
-                    console.log("API working", data);
+                    
 
                     if (res.ok && data?._id) {
                         studio = data as Studio;
@@ -67,14 +73,14 @@ const EditStudioPage = () => {
                 // Fallback: find the document in GET /studios.
                 if (!studio) {
                     const res = await fetch(
-                        `https://studiospace-backend-oqeo.onrender.com/studios`,
+                        `${API_BASE_URL}/studios`,
                         {
                             signal: AbortSignal.timeout(60_000),
                         }
                     );
 
                     const data = await res.json().catch(() => null);
-                    console.log("API working", data);
+                    
 
                     if (!res.ok || !Array.isArray(data)) {
                         throw new Error("Failed to load listing");
@@ -90,6 +96,15 @@ const EditStudioPage = () => {
 
                 if (!studio) {
                     throw new Error("Listing not found");
+                }
+
+                const ownerEmail = studio.ownerEmail?.trim().toLowerCase();
+                const currentEmail = session?.user?.email?.trim().toLowerCase();
+
+                if (ownerEmail && currentEmail && ownerEmail !== currentEmail) {
+                    setNotAuthorized(true);
+                    setLoading(false);
+                    return;
                 }
 
                 setInitialValues(toFormValues(studio));
@@ -117,7 +132,30 @@ const EditStudioPage = () => {
         return () => {
             cancelled = true;
         };
-    }, [id, toast]);
+    }, [id, toast, session?.user?.email]);
+
+    if (notAuthorized) {
+        return (
+            <div className="flex flex-col items-center justify-center rounded-3xl border border-gray-200 bg-white px-6 py-20 text-center dark:border-white/10 dark:bg-[#131313]">
+                <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+                    You can only edit your own listings
+                </h1>
+
+                <p className="mt-2 max-w-md text-sm leading-6 text-gray-500 dark:text-gray-400">
+                    This studio belongs to another host. Head back to your
+                    listings to update one of your own spaces.
+                </p>
+
+                <Link
+                    href="/my-listings"
+                    className="mt-6 inline-flex items-center gap-2 rounded-full bg-primary text-primary-foreground px-6 py-2.5 text-sm font-semibold transition-all hover:bg-primary/90"
+                >
+                    <ArrowLeft className="size-4" />
+                    Back to my listings
+                </Link>
+            </div>
+        );
+    }
 
     if (notFound) {
         return (
@@ -183,4 +221,10 @@ const EditStudioPage = () => {
     );
 };
 
-export default EditStudioPage;
+const EditStudioPageWithAuth = () => (
+    <RequireAuth>
+        <EditStudioPage />
+    </RequireAuth>
+);
+
+export default EditStudioPageWithAuth;

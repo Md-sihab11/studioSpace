@@ -1,13 +1,36 @@
-'use client'
-import { authClient } from '@/lib/auth-client';
+'use client';
+
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { Eye, EyeOff, Loader2, Lock, Mail } from 'lucide-react';
+import { authClient } from '@/lib/auth-client';
 import { useToast } from '@/lib/use-toast';
+
+/** Only allow same-origin relative paths after login. */
+const getRedirectTarget = () => {
+    if (typeof window === "undefined") return "/";
+
+    const target = new URLSearchParams(window.location.search).get("redirect");
+
+    if (target && target.startsWith("/") && !target.startsWith("//")) {
+        return target;
+    }
+
+    return "/";
+};
+
+const fieldClass =
+    "flex items-center gap-3 rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 transition-colors focus-within:border-teal-400 focus-within:bg-white focus-within:ring-2 focus-within:ring-teal-400/20 dark:border-white/10 dark:bg-[#0d0d0d] dark:focus-within:border-sky-400 dark:focus-within:bg-[#0d0d0d] dark:focus-within:ring-sky-400/20";
+
+const inputClass =
+    "w-full bg-transparent text-sm text-gray-900 outline-none placeholder:text-gray-400 dark:text-white dark:placeholder:text-gray-500";
 
 const LogInPage = () => {
     const router = useRouter();
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
     const { toast } = useToast();
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -16,13 +39,16 @@ const LogInPage = () => {
         setLoading(true);
 
         const formData = new FormData(e.currentTarget);
-        const user = Object.fromEntries(formData.entries()) as { email: string; password: string };
+        const user = Object.fromEntries(formData.entries()) as {
+            email: string;
+            password: string;
+        };
 
         const { error: authError } = await authClient.signIn.email({
             email: user.email,
             password: user.password,
             rememberMe: true,
-            callbackURL: "/",
+            callbackURL: getRedirectTarget(),
         });
 
         if (authError) {
@@ -42,123 +68,137 @@ const LogInPage = () => {
             type: "success",
         });
 
-        router.push("/");
+        router.push(getRedirectTarget());
     };
 
     return (
-        <div className="min-h-[calc(100vh-72px)] flex items-center justify-center px-4 py-12 sm:px-6 lg:px-10 bg-gray-50 dark:bg-[#0a0a0a] transition-colors duration-300">
+        <div className="relative min-h-[calc(100vh-72px)] overflow-hidden bg-gray-50 px-4 py-12 transition-colors duration-300 dark:bg-[#0a0a0a] sm:px-6">
+            {/* Soft brand glow */}
+            <div
+                aria-hidden="true"
+                className="pointer-events-none absolute -top-24 left-1/2 h-72 w-[36rem] -translate-x-1/2 rounded-full bg-linear-to-r from-teal-400/20 via-blue-500/15 to-transparent blur-3xl dark:from-sky-500/15 dark:via-blue-500/10"
+            />
 
-            <div className="w-full max-w-[480px] bg-linear-to-br from-[#00ff75] to-[#3700ff] rounded-[22px] transition-all duration-300 hover:shadow-[0_0_30px_1px_rgba(0,255,117,0.3)]">
+            <div className="relative mx-auto w-full max-w-md">
+                <div className="rounded-[28px] border border-gray-200 bg-white p-7 shadow-xl shadow-black/[0.04] transition-colors duration-300 dark:border-white/10 dark:bg-[#131313] dark:shadow-black/40 sm:p-9">
+                    <span className="inline-flex items-center rounded-full bg-teal-50 px-3 py-1 text-xs font-semibold tracking-[0.16em] text-teal-700 uppercase dark:bg-sky-500/10 dark:text-sky-400">
+                        Welcome back
+                    </span>
 
-                <div className="rounded-none transition-all duration-200 hover:scale-[0.98] hover:rounded-[20px]">
+                    <h1 className="mt-4 text-2xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-3xl">
+                        Log in to StudioSpace
+                    </h1>
 
-                    <form
-                        onSubmit={handleSubmit}
-                        className="flex flex-col gap-4 px-8 sm:px-10 py-6 bg-white dark:bg-[#171717] text-gray-900 dark:text-white rounded-[25px] transition-colors duration-300"
-                    >
-                        {/* Heading */}
-                        <p className="text-center mt-6 mb-8 text-2xl font-semibold text-gray-900 dark:text-white">
-                            Login
-                        </p>
+                    <p className="mt-2 text-sm leading-6 text-gray-500 dark:text-gray-400">
+                        Book photo studios, film stages and podcast rooms by the
+                        hour — all in one place.
+                    </p>
 
-                        {/* Error message */}
+                    <form onSubmit={handleSubmit} className="mt-7 flex flex-col gap-4">
                         {error && (
-                            <p className="text-center text-sm text-red-500 -mt-4 bg-red-50 dark:bg-red-950/40 rounded-md px-3 py-2">
+                            <p
+                                role="alert"
+                                className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-600 dark:bg-red-950/40 dark:text-red-400"
+                            >
                                 {error}
                             </p>
                         )}
 
-                        {/* Email Field */}
-                        <div className="flex items-center gap-3 rounded-[25px] p-4 border-0 outline-none bg-gray-100 dark:bg-[#171717] shadow-[inset_2px_5px_10px_rgba(0,0,0,0.08)] dark:shadow-[inset_2px_5px_10px_rgb(5,5,5)] transition-colors duration-300">
-
-                            <svg
-                                viewBox="0 0 16 16"
-                                fill="currentColor"
-                                className="h-5 w-5 fill-gray-700 dark:fill-white shrink-0"
+                        <div>
+                            <label
+                                htmlFor="login-email"
+                                className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300"
                             >
-                                <path d="M13.106 7.222c0-2.967-2.249-5.032-5.482-5.032-3.35 0-5.646 2.318-5.646 5.702 0 3.493 2.235 5.708 5.762 5.708.862 0 1.689-.123 2.304-.335v-.862c-.43.199-1.354.328-2.29.328-2.926 0-4.813-1.88-4.813-4.798 0-2.844 1.921-4.881 4.594-4.881 2.735 0 4.608 1.688 4.608 4.156 0 1.682-.554 2.769-1.416 2.769-.492 0-.772-.28-.772-.76V5.206H8.923v.834h-.11c-.266-.595-.881-.964-1.6-.964-1.4 0-2.378 1.162-2.378 2.823 0 1.737.957 2.906 2.379 2.906.8 0 1.415-.39 1.709-1.087h.11c.081.67.703 1.148 1.503 1.148 1.572 0 2.57-1.415 2.57-3.643zm-7.177.704c0-1.197.54-1.907 1.456-1.907.93 0 1.524.738 1.524 1.907S8.308 9.84 7.371 9.84c-.895 0-1.442-.725-1.442-1.914z" />
-                            </svg>
+                                Email address
+                            </label>
 
-                            <input
-                                type="email"
-                                name="email"
-                                required
-                                className="bg-transparent border-none outline-none w-full text-gray-900 dark:text-[#d3d3d3] placeholder:text-gray-500 dark:placeholder:text-gray-400"
-                                placeholder="Email Address"
-                                autoComplete="email"
-                            />
+                            <div className={fieldClass}>
+                                <Mail className="size-4 shrink-0 text-gray-400 dark:text-gray-500" />
+
+                                <input
+                                    id="login-email"
+                                    type="email"
+                                    name="email"
+                                    required
+                                    className={inputClass}
+                                    placeholder="you@example.com"
+                                    autoComplete="email"
+                                />
+                            </div>
                         </div>
 
-                        {/* Password Field */}
-                        <div className="flex items-center gap-3 rounded-[25px] p-4 border-0 outline-none bg-gray-100 dark:bg-[#171717] shadow-[inset_2px_5px_10px_rgba(0,0,0,0.08)] dark:shadow-[inset_2px_5px_10px_rgb(5,5,5)] transition-colors duration-300">
-
-                            <svg
-                                viewBox="0 0 16 16"
-                                fill="currentColor"
-                                className="h-5 w-5 fill-gray-700 dark:fill-white shrink-0"
+                        <div>
+                            <label
+                                htmlFor="login-password"
+                                className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300"
                             >
-                                <path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z" />
-                            </svg>
+                                Password
+                            </label>
 
-                            <input
-                                type="password"
-                                name="password"
-                                required
-                                className="bg-transparent border-none outline-none w-full text-gray-900 dark:text-[#d3d3d3] placeholder:text-gray-500 dark:placeholder:text-gray-400"
-                                placeholder="Password"
-                                autoComplete="current-password"
-                            />
+                            <div className={fieldClass}>
+                                <Lock className="size-4 shrink-0 text-gray-400 dark:text-gray-500" />
+
+                                <input
+                                    id="login-password"
+                                    type={showPassword ? "text" : "password"}
+                                    name="password"
+                                    required
+                                    className={inputClass}
+                                    placeholder="Enter your password"
+                                    autoComplete="current-password"
+                                />
+
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword((value) => !value)}
+                                    aria-label={
+                                        showPassword
+                                            ? "Hide password"
+                                            : "Show password"
+                                    }
+                                    className="text-gray-400 transition-colors hover:text-gray-700 dark:text-gray-500 dark:hover:text-gray-300"
+                                >
+                                    {showPassword ? (
+                                        <EyeOff className="size-4" />
+                                    ) : (
+                                        <Eye className="size-4" />
+                                    )}
+                                </button>
+                            </div>
                         </div>
 
-                        {/* Forgot Password */}
-                        <div className="flex justify-end">
-                            <button
-                                type="button"
-                                onClick={() => router.push("/forgot-password")}
-                                className="text-sm text-gray-500 dark:text-gray-400 hover:text-red-500 transition-colors duration-300"
-                            >
-                                Forgot Password?
-                            </button>
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-full bg-linear-to-r from-teal-600 to-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-600/20 transition-all duration-200 hover:from-teal-500 hover:to-blue-500 hover:shadow-xl active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                            {loading && <Loader2 className="size-4 animate-spin" />}
+                            {loading ? "Logging in..." : "Log in"}
+                        </button>
+
+                        <div className="flex items-center gap-3 py-1">
+                            <span className="h-px flex-1 bg-gray-200 dark:bg-white/10" />
+                            <span className="text-xs font-medium text-gray-400 dark:text-gray-500">
+                                OR
+                            </span>
+                            <span className="h-px flex-1 bg-gray-200 dark:bg-white/10" />
                         </div>
 
-                        {/* Login and Register */}
-                        <div className="flex flex-col sm:flex-row gap-3 mt-4">
-
-                            <button
-                                type="submit"
-                                disabled={loading}
-                                className="flex-1 p-3 rounded-[8px] border border-gray-300 dark:border-transparent outline-none transition-all duration-300 bg-gray-200 dark:bg-[#252525] text-gray-900 dark:text-white hover:bg-gray-300 dark:hover:bg-black disabled:opacity-60 disabled:cursor-not-allowed"
-                            >
-                                {loading ? "Logging in..." : "Login"}
-                            </button>
-
-                            <button
-                                type="button"
-                                onClick={() => router.push("/register")}
-                                className="flex-1 p-3 rounded-[8px] border border-gray-300 dark:border-transparent outline-none transition-all duration-300 bg-gray-200 dark:bg-[#252525] text-gray-900 dark:text-white hover:bg-gray-300 dark:hover:bg-black"
-                            >
-                                Sign Up
-                            </button>
-
-                        </div>
-
-                        {/* Divider */}
-                        <div className="flex items-center gap-3 my-2">
-                            <div className="flex-1 h-px bg-gray-300 dark:bg-gray-700"></div>
-                            <span className="text-gray-500 dark:text-gray-400 text-sm">OR</span>
-                            <div className="flex-1 h-px bg-gray-300 dark:bg-gray-700"></div>
-                        </div>
-
-                        {/* Google Login */}
                         <button
                             type="button"
-                            onClick={() => authClient.signIn.social({ provider: "google", callbackURL: "/" })}
-                            className="flex items-center justify-center gap-3 w-full p-3 rounded-[8px] border border-gray-300 dark:border-[#444] bg-gray-100 dark:bg-[#252525] text-gray-900 dark:text-white transition-all duration-300 hover:bg-gray-200 dark:hover:bg-black hover:border-gray-400 dark:hover:border-gray-500"
+                            onClick={() =>
+                                authClient.signIn.social({
+                                    provider: "google",
+                                    callbackURL: getRedirectTarget(),
+                                })
+                            }
+                            className="inline-flex w-full items-center justify-center gap-3 rounded-full border border-gray-200 bg-white px-5 py-3 text-sm font-semibold text-gray-800 transition-all duration-200 hover:border-gray-300 hover:bg-gray-50 dark:border-white/10 dark:bg-[#0d0d0d] dark:text-gray-200 dark:hover:border-white/20 dark:hover:bg-white/5"
                         >
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 viewBox="0 0 48 48"
-                                className="w-5 h-5"
+                                className="size-5"
+                                aria-hidden="true"
                             >
                                 <path
                                     fill="#FFC107"
@@ -177,21 +217,18 @@ const LogInPage = () => {
                                     d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.2 4.3-4.1 5.8l6.9 5.8C42.1 35.7 46 30.3 46 24c0-1.5-.2-2.9-.4-3.5z"
                                 />
                             </svg>
-
                             Continue with Google
                         </button>
 
-                        {/* Register Link */}
-                        <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-3 mb-4">
+                        <p className="mt-2 text-center text-sm text-gray-500 dark:text-gray-400">
                             Don&apos;t have an account?{" "}
-                            <a
+                            <Link
                                 href="/register"
-                                className="text-gray-900 dark:text-white font-semibold hover:text-green-600 dark:hover:text-[#00ff75] transition-colors"
+                                className="font-semibold text-teal-700 transition-colors hover:text-teal-800 dark:text-sky-400 dark:hover:text-sky-300"
                             >
-                                Register
-                            </a>
+                                Create one
+                            </Link>
                         </p>
-
                     </form>
                 </div>
             </div>

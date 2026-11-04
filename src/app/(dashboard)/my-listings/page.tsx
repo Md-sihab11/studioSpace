@@ -4,9 +4,9 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowRight, LayoutGrid, MapPin, Pencil, Plus, Trash2, Users } from "lucide-react";
-import { useSession } from "@/lib/auth-client";
+import { getJwtToken, useSession } from "@/lib/auth-client";
 import { useToast } from "@/lib/use-toast";
-import type { Studio } from "@/lib/constants";
+import { API_BASE_URL, type Studio } from "@/lib/constants";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -50,13 +50,19 @@ const MyListingsPage = () => {
 
         (async () => {
             try {
+                const token = await getJwtToken();
+
                 // GET /my-listings/:email
                 const res = await fetch(
-                    `https://studiospace-backend-oqeo.onrender.com/my-listings/${encodeURIComponent(ownerEmail)}`
+                    `${API_BASE_URL}/my-listings/${encodeURIComponent(ownerEmail)}`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    }
                 );
 
                 const data = await res.json().catch(() => null);
-                console.log("API working", data);
 
                 if (cancelled) return;
 
@@ -64,7 +70,12 @@ const MyListingsPage = () => {
                     throw new Error("Failed to load listings");
                 }
 
-                setListings(data as Studio[]);
+                setListings(
+                    (data as Studio[]).map((studio) => ({
+                        ...studio,
+                        image: studio.image ?? studio.imageUrl ?? "",
+                    }))
+                );
             } catch (error) {
                 if (cancelled) return;
 
@@ -90,15 +101,19 @@ const MyListingsPage = () => {
         setDeleting(true);
 
         try {
+            const token = await getJwtToken();
+
             const res = await fetch(
-                `https://studiospace-backend-oqeo.onrender.com/delete-studio/${pendingDelete._id}`,
+                `${API_BASE_URL}/delete-studio/${pendingDelete._id}`,
                 {
                     method: "DELETE",
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
                 }
             );
 
             const data = await res.json().catch(() => null);
-            console.log("API working", data);
 
             if (!res.ok || data?.success === false) {
                 throw new Error(data?.message || "Failed to delete listing");
@@ -247,6 +262,7 @@ const MyListingsPage = () => {
                         >
                             {/* Thumbnail + identity */}
                             <div className="flex min-w-0 flex-1 items-center gap-4">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img
                                     src={studio.image}
                                     alt={studio.title}

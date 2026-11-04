@@ -20,6 +20,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import DashboardLayoutShell from "@/component/dashboard/DashboardLayoutShell";
+import RequireAuth from "@/component/auth/RequireAuth";
 
 const ProfilePage = () => {
     const router = useRouter();
@@ -236,4 +237,10 @@ const ProfilePage = () => {
     );
 };
 
-export default ProfilePage;
+const ProfilePageWithAuth = () => (
+    <RequireAuth>
+        <ProfilePage />
+    </RequireAuth>
+);
+
+export default ProfilePageWithAuth;

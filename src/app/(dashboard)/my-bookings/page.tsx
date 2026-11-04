@@ -11,7 +11,8 @@ import {
     ArrowRight,
     Loader2,
 } from "lucide-react";
-import { useSession } from "@/lib/auth-client";
+import { getJwtToken, useSession } from "@/lib/auth-client";
+import { API_BASE_URL } from "@/lib/constants";
 import { useToast } from "@/lib/use-toast";
 import {
     AlertDialog,
@@ -98,13 +99,18 @@ const MyBookingsPage = () => {
 
         (async () => {
             try {
+                const token = await getJwtToken();
+
                 const res = await fetch(
-                    `https://studiospace-backend-oqeo.onrender.com/my-bookings/${encodeURIComponent(email)}`
+                    `${API_BASE_URL}/my-bookings/${encodeURIComponent(email)}`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    }
                 );
 
                 const data = await res.json().catch(() => null);
-
-                console.log("API working", data);
 
                 if (cancelled) return;
 
@@ -150,17 +156,20 @@ const MyBookingsPage = () => {
         setCancelling(true);
 
         try {
+            const token = await getJwtToken();
+
             // PATCH /cancel-booking/:id
             const res = await fetch(
-                `https://studiospace-backend-oqeo.onrender.com/cancel-booking/${pendingCancel._id}`,
+                `${API_BASE_URL}/cancel-booking/${pendingCancel._id}`,
                 {
                     method: "PATCH",
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
                 }
             );
 
             const data = await res.json().catch(() => null);
-
-            console.log("API working", data);
 
             if (!res.ok || data?.success === false) {
                 throw new Error(
