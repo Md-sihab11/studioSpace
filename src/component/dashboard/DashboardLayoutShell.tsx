@@ -297,17 +297,6 @@ const DashboardLayoutShell = ({ children }: DashboardLayoutShellProps) => {
     const [mobileOpen, setMobileOpen] = useState(false);
     const [isCollapsed, setIsCollapsed] = useState(false);
 
-    useEffect(() => {
-        try {
-            const stored = window.localStorage.getItem("studiospace_sidebar_collapsed");
-            if (stored !== null) {
-                setIsCollapsed(stored === "true");
-            }
-        } catch {
-            // ignore
-        }
-    }, []);
-
     const toggleCollapse = () => {
         setIsCollapsed((prev) => {
             const next = !prev;

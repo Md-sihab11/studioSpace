@@ -20,9 +20,13 @@ import {
     CarouselNext,
     CarouselPrevious,
 } from "@/components/ui/carousel";
+import { API_BASE_URL } from "@/lib/constants";
 
-/** Where the StudioSpace backend serves the studio list from. */
-const STUDIOS_API = "https://studiospace-backend-oqeo.onrender.com/studios";
+/**
+ * Top-rated listings only. The backend sorts by rating/createdAt and applies
+ * `.limit(6)`; the client keeps a slice as a safety net.
+ */
+const STUDIOS_API = `${API_BASE_URL}/studios?limit=${6}&sort=rating`;
 
 /** The home page only surfaces the top six listings — /studios holds the rest. */
 const MAX_FEATURED_STUDIOS = 6;
@@ -41,6 +45,7 @@ type RemoteStudio = {
     reviews?: number;
     amenities?: string[];
     overview?: string;
+    createdAt?: string;
 };
 
 /** Drops incomplete records (e.g. empty docs) so one bad row can't break the grid. */
@@ -87,6 +92,7 @@ const toCardStudio = (studio: RemoteStudio) => ({
     rating: studio.rating ?? 0,
     reviews: studio.reviews ?? 0,
     features: studio.amenities ?? [],
+    createdAt: studio.createdAt ?? "",
 });
 
 const FeaturedStudios = () => {
@@ -110,7 +116,6 @@ const FeaturedStudios = () => {
                     throw new Error(`The studios API responded with ${res.status}`);
                 }
                 const data: unknown = await res.json();
-                console.log("API working", data);
                 if (!Array.isArray(data)) {
                     throw new Error("The studios API returned an unexpected payload");
                 }
@@ -165,7 +170,13 @@ const FeaturedStudios = () => {
                 studio.category.toLowerCase().includes(q) ||
                 studio.features.some((f) => f.toLowerCase().includes(q));
             return matchesCategory && matchesQuery;
-        }).slice(0, MAX_FEATURED_STUDIOS);
+        })
+            .sort(
+                (a, b) =>
+                    b.rating - a.rating ||
+                    b.createdAt.localeCompare(a.createdAt)
+            )
+            .slice(0, MAX_FEATURED_STUDIOS);
     }, [cardStudios, query, activeCategory]);
 
     const clearSearch = () => {
@@ -174,13 +185,6 @@ const FeaturedStudios = () => {
     };
 
     const hasActiveFilter = query.trim() !== "" || activeCategory !== "All";
-
-    const countLabel =
-        status === "loading"
-            ? "Loading studios…"
-            : status === "error"
-              ? "Studios unavailable"
-              : `Showing ${filtered.length} ${filtered.length === 1 ? "studio" : "studios"}`;
 
     return (
         <section id="featured" className="scroll-mt-24 bg-gray-50 py-16 dark:bg-[#0a0a0a] sm:py-20 lg:py-24">

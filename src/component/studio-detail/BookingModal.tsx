@@ -3,7 +3,8 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Calendar, Clock, Loader2, LogIn } from "lucide-react";
-import { useSession } from "@/lib/auth-client";
+import { getJwtToken, useSession } from "@/lib/auth-client";
+import { API_BASE_URL } from "@/lib/constants";
 import { useToast } from "@/lib/use-toast";
 import { Button } from "@/components/ui/button";
 import {
@@ -103,14 +104,17 @@ const BookingModal = ({ open, onOpenChange, studio }: BookingModalProps) => {
         setSubmitting(true);
 
         try {
+            const token = await getJwtToken();
+
             // POST /add-booking
             // The backend always saves it as "Pending".
             const res = await fetch(
-                `https://studiospace-backend-oqeo.onrender.com/add-booking`,
+                `${API_BASE_URL}/add-booking`,
                 {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
                     },
                     body: JSON.stringify({
                         studioId: studio._id,
@@ -132,7 +136,6 @@ const BookingModal = ({ open, onOpenChange, studio }: BookingModalProps) => {
             );
 
             const data = await res.json().catch(() => null);
-            console.log("API working", data);
 
             if (!res.ok || (data && data.success === false)) {
                 throw new Error(

@@ -87,14 +87,6 @@ function InstagramIcon({ className }: SocialIconProps) {
     );
 }
 
-function YoutubeIcon({ className }: SocialIconProps) {
-    return (
-        <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-            <path d="M21.6 7.2a2.5 2.5 0 0 0-1.8-1.8C18.2 5 12 5 12 5s-6.2 0-7.8.4A2.5 2.5 0 0 0 2.4 7.2 26.5 26.5 0 0 0 2 12a26.5 26.5 0 0 0 .4 4.8 2.5 2.5 0 0 0 1.8 1.8c1.6.4 7.8.4 7.8.4s6.2 0 7.8-.4a2.5 2.5 0 0 0 1.8-1.8A26.5 26.5 0 0 0 22 12a26.5 26.5 0 0 0-.4-4.8zM10 15.5v-7l6 3.5-6 3.5z" />
-        </svg>
-    );
-}
-
 const HeroSlider = () => {
     const [active, setActive] = React.useState(0);
     const [swiper, setSwiper] = React.useState<SwiperClass | null>(null);
@@ -175,7 +167,7 @@ const HeroSlider = () => {
                                             Explore Studios
                                         </Link>
                                         <Link
-                                            href="/add-studio"
+                                            href="/studios"
                                             className="inline-flex items-center justify-center rounded-full border border-white/25 bg-white/10 px-8 py-3.5 text-sm font-semibold text-white shadow-lg backdrop-blur-md transition-all duration-200 hover:border-white/50 hover:bg-white/20 hover:shadow-xl active:scale-[0.98]"
                                         >
                                             Host Your Space

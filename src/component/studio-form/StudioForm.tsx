@@ -2,10 +2,10 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, MapPin } from "lucide-react";
-import { useSession } from "@/lib/auth-client";
+import { ImagePlus, Loader2, MapPin, Trash2 } from "lucide-react";
+import { getJwtToken, useSession } from "@/lib/auth-client";
 import { useToast } from "@/lib/use-toast";
-import { AMENITIES, STUDIO_CATEGORIES } from "@/lib/constants";
+import { AMENITIES, API_BASE_URL, STUDIO_CATEGORIES } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
 import {
     Card,
@@ -37,6 +37,7 @@ export type StudioFormValues = {
     maxCapacity: string;
     location: string;
     image: string;
+    images: string[];
     amenities: string[];
     overview: string;
 };
@@ -49,8 +50,38 @@ const emptyValues: StudioFormValues = {
     maxCapacity: "",
     location: "",
     image: "",
+    images: [],
     amenities: [],
     overview: "",
+};
+
+/** Upload one image to imgbb and return its hosted URL. */
+const uploadToImgbb = async (file: File): Promise<string> => {
+    const apiKey = process.env.NEXT_PUBLIC_IMGBB_API_KEY;
+
+    if (!apiKey) {
+        throw new Error(
+            "Image upload is not configured. Add NEXT_PUBLIC_IMGBB_API_KEY to .env.local, or paste an image URL instead."
+        );
+    }
+
+    const body = new FormData();
+    body.append("image", file);
+
+    const res = await fetch(
+        `https://api.imgbb.com/1/upload?key=${encodeURIComponent(apiKey)}`,
+        { method: "POST", body }
+    );
+
+    const data = await res.json().catch(() => null);
+
+    if (!res.ok || !data?.success || !data?.data?.url) {
+        throw new Error(
+            data?.error?.message || "The image host rejected the upload."
+        );
+    }
+
+    return data.data.url as string;
 };
 
 type StudioFormProps = {
@@ -78,6 +109,7 @@ const StudioForm = ({
     >({});
 
     const [submitting, setSubmitting] = useState(false);
+    const [uploading, setUploading] = useState(false);
 
     const user = session?.user;
 
@@ -107,6 +139,79 @@ const StudioForm = ({
             checked
                 ? [...values.amenities, amenity]
                 : values.amenities.filter((a) => a !== amenity)
+        );
+    };
+
+    // Upload / replace the cover photo.
+    const handleCoverUpload = async (
+        event: React.ChangeEvent<HTMLInputElement>
+    ) => {
+        const file = event.target.files?.[0];
+        event.target.value = "";
+        if (!file) return;
+
+        setUploading(true);
+
+        try {
+            const url = await uploadToImgbb(file);
+            set("image", url);
+            toast({
+                title: "Cover uploaded",
+                description: "Your photo is hosted and ready to publish.",
+                type: "success",
+            });
+        } catch (error) {
+            toast({
+                title: "Upload failed",
+                description:
+                    error instanceof Error ? error.message : "Please try again.",
+                type: "error",
+            });
+        } finally {
+            setUploading(false);
+        }
+    };
+
+    // Upload one or more additional gallery photos.
+    const handleGalleryUpload = async (
+        event: React.ChangeEvent<HTMLInputElement>
+    ) => {
+        const files = Array.from(event.target.files ?? []);
+        event.target.value = "";
+        if (files.length === 0) return;
+
+        setUploading(true);
+
+        try {
+            const urls = await Promise.all(files.map(uploadToImgbb));
+
+            setValues((prev) => ({
+                ...prev,
+                images: [...prev.images, ...urls],
+                image: prev.image || urls[0] || "",
+            }));
+
+            toast({
+                title: urls.length > 1 ? "Photos uploaded" : "Photo uploaded",
+                description: `${urls.length} gallery image${urls.length === 1 ? "" : "s"} added.`,
+                type: "success",
+            });
+        } catch (error) {
+            toast({
+                title: "Upload failed",
+                description:
+                    error instanceof Error ? error.message : "Please try again.",
+                type: "error",
+            });
+        } finally {
+            setUploading(false);
+        }
+    };
+
+    const removeGalleryImage = (url: string) => {
+        set(
+            "images",
+            values.images.filter((image) => image !== url)
         );
     };
 
@@ -152,9 +257,11 @@ const StudioForm = ({
             next.location = "Location is required";
         }
 
-        if (!values.image.trim()) {
-            next.image = "Image URL is required";
-        } else if (!/^https?:\/\/\S+$/i.test(values.image.trim())) {
+        const cover = values.image.trim() || values.images[0] || "";
+
+        if (!cover) {
+            next.image = "Upload a cover photo or paste an image URL";
+        } else if (!/^https?:\/\/\S+$/i.test(cover)) {
             next.image = "Enter a valid URL (https://...)";
         }
 
@@ -207,18 +314,24 @@ const StudioForm = ({
         setSubmitting(true);
 
         try {
-            const res = await fetch(`https://studiospace-backend-oqeo.onrender.com/${mode === "add" ? "add-studio" : `update-studio/${studioId}`}`,
+            const token = await getJwtToken();
+
+            const res = await fetch(
+                `${API_BASE_URL}/${mode === "add"
+                    ? "add-studio"
+                    : `update-studio/${studioId}`
+                }`,
                 {
                     method: mode === "add" ? "POST" : "PUT",
                     headers: {
                         "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
                     },
                     body: JSON.stringify({
                         ...values,
+                        image: values.image.trim() || values.images[0] || "",
                         hourlyRate: Number(values.hourlyRate),
-                        securityDeposit: Number(
-                            values.securityDeposit || 0
-                        ),
+                        securityDeposit: Number(values.securityDeposit || 0),
                         maxCapacity: Number(values.maxCapacity),
 
                         ...(mode === "add"
@@ -235,8 +348,6 @@ const StudioForm = ({
             );
 
             const data = await res.json();
-
-            console.log("API working", data);
 
             if (!res.ok || data?.success === false) {
                 throw new Error(
@@ -464,25 +575,62 @@ const StudioForm = ({
                             )}
                         </Field>
 
-                        {/* Image URL */}
+                        {/* Cover image */}
                         <Field className="sm:col-span-2">
                             <FieldLabel htmlFor="studio-image">
-                                Image URL
+                                Cover Image
                             </FieldLabel>
 
-                            <Input
-                                id="studio-image"
-                                type="url"
-                                placeholder="https://images.unsplash.com/..."
-                                value={values.image}
-                                onChange={(e) =>
-                                    set("image", e.target.value)
-                                }
-                                aria-invalid={!!errors.image}
-                            />
+                            <div className="flex flex-col gap-3">
+                                <Input
+                                    id="studio-image"
+                                    type="url"
+                                    placeholder="https://images.unsplash.com/..."
+                                    value={values.image}
+                                    onChange={(e) =>
+                                        set("image", e.target.value)
+                                    }
+                                    aria-invalid={!!errors.image}
+                                />
+
+                                <div className="flex flex-wrap items-center gap-3">
+                                    <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-teal-200 bg-teal-50 px-4 py-2 text-sm font-semibold text-teal-700 transition-colors hover:bg-teal-100 dark:border-sky-500/30 dark:bg-sky-500/10 dark:text-sky-400 dark:hover:bg-sky-500/20">
+                                        {uploading ? (
+                                            <Loader2 className="size-4 animate-spin" />
+                                        ) : (
+                                            <ImagePlus className="size-4" />
+                                        )}
+
+                                        {uploading
+                                            ? "Uploading..."
+                                            : "Upload cover photo"}
+
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            className="hidden"
+                                            onChange={handleCoverUpload}
+                                            disabled={uploading}
+                                        />
+                                    </label>
+
+                                    <span className="text-xs text-muted-foreground">
+                                        or paste a direct HTTPS link above
+                                    </span>
+                                </div>
+
+                                {values.image && (
+                                    // eslint-disable-next-line @next/next/no-img-element
+                                    <img
+                                        src={values.image}
+                                        alt="Cover preview"
+                                        className="h-36 w-full max-w-sm rounded-xl object-cover"
+                                    />
+                                )}
+                            </div>
 
                             <FieldDescription>
-                                Direct link to a photo of your space (HTTPS).
+                                Uploaded to imgbb and stored as a hosted URL.
                             </FieldDescription>
 
                             {errors.image && (
@@ -490,6 +638,57 @@ const StudioForm = ({
                                     {errors.image}
                                 </FieldError>
                             )}
+                        </Field>
+
+                        {/* Gallery images */}
+                        <Field className="sm:col-span-2">
+                            <FieldLabel>Gallery Photos</FieldLabel>
+
+                            <FieldDescription>
+                                Optional — add more angles for the details
+                                page carousel.
+                            </FieldDescription>
+
+                            <div className="mt-3 flex flex-wrap items-center gap-3">
+                                <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 transition-colors hover:border-teal-300 hover:text-teal-700 dark:border-white/10 dark:bg-[#131313] dark:text-gray-300 dark:hover:border-sky-400 dark:hover:text-sky-300">
+                                    <ImagePlus className="size-4" />
+                                    Add gallery photos
+
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        multiple
+                                        className="hidden"
+                                        onChange={handleGalleryUpload}
+                                        disabled={uploading}
+                                    />
+                                </label>
+
+                                {values.images.map((url) => (
+                                    <span
+                                        key={url}
+                                        className="relative"
+                                    >
+                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                        <img
+                                            src={url}
+                                            alt="Gallery preview"
+                                            className="size-20 rounded-xl object-cover"
+                                        />
+
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                removeGalleryImage(url)
+                                            }
+                                            aria-label="Remove gallery photo"
+                                            className="absolute -top-1.5 -right-1.5 flex size-5 items-center justify-center rounded-full bg-red-600 text-white shadow-sm transition-colors hover:bg-red-700"
+                                        >
+                                            <Trash2 className="size-3" />
+                                        </button>
+                                    </span>
+                                ))}
+                            </div>
                         </Field>
                     </FieldGroup>
 

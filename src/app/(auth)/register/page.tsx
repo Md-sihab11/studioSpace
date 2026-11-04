@@ -1,16 +1,37 @@
 'use client';
 
-import { authClient } from '@/lib/auth-client';
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import {
+    Check,
+    Eye,
+    EyeOff,
+    Image as ImageIcon,
+    Loader2,
+    Lock,
+    Mail,
+    User as UserIcon,
+    X,
+} from 'lucide-react';
+import { authClient } from '@/lib/auth-client';
 import { useToast } from '@/lib/use-toast';
-import { Check, X } from 'lucide-react';
+
+const fieldClass =
+    "flex items-center gap-3 rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 transition-colors focus-within:border-teal-400 focus-within:bg-white focus-within:ring-2 focus-within:ring-teal-400/20 dark:border-white/10 dark:bg-[#0d0d0d] dark:focus-within:border-sky-400 dark:focus-within:bg-[#0d0d0d] dark:focus-within:ring-sky-400/20";
+
+const inputClass =
+    "w-full bg-transparent text-sm text-gray-900 outline-none placeholder:text-gray-400 dark:text-white dark:placeholder:text-gray-500";
+
+const labelClass =
+    "mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300";
 
 const RegisterPage = () => {
     const router = useRouter();
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [password, setPassword] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
     const { toast } = useToast();
 
     // Real-time password criteria
@@ -24,7 +45,9 @@ const RegisterPage = () => {
         setError(null);
 
         if (!isPasswordValid) {
-            setError("Password must be at least 6 characters and contain uppercase and lowercase letters.");
+            setError(
+                "Password must be at least 6 characters and contain uppercase and lowercase letters."
+            );
             toast({
                 title: "Invalid password",
                 description: "Please satisfy all password requirements.",
@@ -47,7 +70,7 @@ const RegisterPage = () => {
             email: user.email,
             password: user.password,
             name: user.name,
-            image: user.photoURL || undefined,
+            image: user.photoURL?.trim() || undefined,
         });
 
         if (authError) {
@@ -63,236 +86,228 @@ const RegisterPage = () => {
 
         toast({
             title: "Account created!",
-            description: "You can now log in to your account.",
+            description: "Welcome to StudioSpace — your account is ready.",
             type: "success",
         });
 
-        router.push("/login");
+        router.push("/");
     };
 
+    const requirements = [
+        { met: hasMinLength, label: "At least 6 characters" },
+        { met: hasUppercase, label: "At least one uppercase letter (A-Z)" },
+        { met: hasLowercase, label: "At least one lowercase letter (a-z)" },
+    ];
+
     return (
-        <div className="min-h-[calc(100vh-72px)] flex items-center justify-center px-4 py-12 sm:px-6 lg:px-10 bg-gray-50 dark:bg-[#0a0a0a] transition-colors duration-300">
+        <div className="relative min-h-[calc(100vh-72px)] overflow-hidden bg-gray-50 px-4 py-12 transition-colors duration-300 dark:bg-[#0a0a0a] sm:px-6">
+            {/* Soft brand glow */}
+            <div
+                aria-hidden="true"
+                className="pointer-events-none absolute -top-24 left-1/2 h-72 w-[36rem] -translate-x-1/2 rounded-full bg-linear-to-r from-teal-400/20 via-blue-500/15 to-transparent blur-3xl dark:from-sky-500/15 dark:via-blue-500/10"
+            />
 
-            <div className="w-full max-w-[480px] bg-linear-to-br from-[#00ff75] to-[#3700ff] rounded-[22px] transition-all duration-300 hover:shadow-[0_0_30px_1px_rgba(0,255,117,0.3)]">
+            <div className="relative mx-auto w-full max-w-md">
+                <div className="rounded-[28px] border border-gray-200 bg-white p-7 shadow-xl shadow-black/[0.04] transition-colors duration-300 dark:border-white/10 dark:bg-[#131313] dark:shadow-black/40 sm:p-9">
+                    <span className="inline-flex items-center rounded-full bg-teal-50 px-3 py-1 text-xs font-semibold tracking-[0.16em] text-teal-700 uppercase dark:bg-sky-500/10 dark:text-sky-400">
+                        Join StudioSpace
+                    </span>
 
-                <div className="rounded-none transition-all duration-200 hover:scale-[0.98] hover:rounded-[20px]">
+                    <h1 className="mt-4 text-2xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-3xl">
+                        Create your account
+                    </h1>
 
-                    <form
-                        onSubmit={handleSubmit}
-                        className="flex flex-col gap-4 px-8 sm:px-10 py-6 bg-white dark:bg-[#171717] text-gray-900 dark:text-white rounded-[25px] transition-colors duration-300"
-                    >
-                        {/* Heading */}
-                        <p className="text-center mt-6 mb-8 text-2xl font-semibold text-gray-900 dark:text-white">
-                            Create Account
-                        </p>
+                    <p className="mt-2 text-sm leading-6 text-gray-500 dark:text-gray-400">
+                        Discover inspiring spaces, book them by the hour and
+                        list your own studio when you are ready to host.
+                    </p>
 
-                        {/* Error message */}
+                    <form onSubmit={handleSubmit} className="mt-7 flex flex-col gap-4">
                         {error && (
-                            <p className="text-center text-sm text-red-500 -mt-4 bg-red-50 dark:bg-red-950/40 rounded-md px-3 py-2">
+                            <p
+                                role="alert"
+                                className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-600 dark:bg-red-950/40 dark:text-red-400"
+                            >
                                 {error}
                             </p>
                         )}
 
-                        {/* Name Field */}
-                        <div className="flex items-center gap-3 rounded-[25px] p-4 border-0 outline-none bg-gray-100 dark:bg-[#171717] shadow-[inset_2px_5px_10px_rgba(0,0,0,0.08)] dark:shadow-[inset_2px_5px_10px_rgb(5,5,5)] transition-colors duration-300">
+                        <div>
+                            <label htmlFor="register-name" className={labelClass}>
+                                Full name
+                            </label>
 
-                            <svg
-                                viewBox="0 0 16 16"
-                                fill="currentColor"
-                                className="h-5 w-5 fill-gray-700 dark:fill-white shrink-0"
-                            >
-                                <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm0 1c-2.67 0-5 1.34-5 3v1h10v-1c0-1.66-2.33-3-5-3Z" />
-                            </svg>
+                            <div className={fieldClass}>
+                                <UserIcon className="size-4 shrink-0 text-gray-400 dark:text-gray-500" />
 
-                            <input
-                                type="text"
-                                name="name"
-                                required
-                                className="bg-transparent border-none outline-none w-full text-gray-900 dark:text-[#d3d3d3] placeholder:text-gray-500 dark:placeholder:text-gray-400"
-                                placeholder="Full Name"
-                                autoComplete="name"
-                            />
-                        </div>
-
-                        {/* Email Field */}
-                        <div className="flex items-center gap-3 rounded-[25px] p-4 border-0 outline-none bg-gray-100 dark:bg-[#171717] shadow-[inset_2px_5px_10px_rgba(0,0,0,0.08)] dark:shadow-[inset_2px_5px_10px_rgb(5,5,5)] transition-colors duration-300">
-
-                            <svg
-                                viewBox="0 0 16 16"
-                                fill="currentColor"
-                                className="h-5 w-5 fill-gray-700 dark:fill-white shrink-0"
-                            >
-                                <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4Zm2-.5a.5.5 0 0 0-.3.9L8 8.9l6.3-4.5a.5.5 0 0 0-.3-.9H2Z" />
-                            </svg>
-
-                            <input
-                                type="email"
-                                name="email"
-                                required
-                                className="bg-transparent border-none outline-none w-full text-gray-900 dark:text-[#d3d3d3] placeholder:text-gray-500 dark:placeholder:text-gray-400"
-                                placeholder="Email Address"
-                                autoComplete="email"
-                            />
-                        </div>
-
-                        {/* Photo URL Field */}
-                        <div className="flex items-center gap-3 rounded-[25px] p-4 border-0 outline-none bg-gray-100 dark:bg-[#171717] shadow-[inset_2px_5px_10px_rgba(0,0,0,0.08)] dark:shadow-[inset_2px_5px_10px_rgb(5,5,5)] transition-colors duration-300">
-
-                            <svg
-                                viewBox="0 0 16 16"
-                                fill="currentColor"
-                                className="h-5 w-5 fill-gray-700 dark:fill-white shrink-0"
-                            >
-                                <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm0 1c-2.67 0-5 1.34-5 3v1h10v-1c0-1.66-2.33-3-5-3Z" />
-                            </svg>
-
-                            <input
-                                type="url"
-                                name="photoURL"
-                                required
-                                className="bg-transparent border-none outline-none w-full text-gray-900 dark:text-[#d3d3d3] placeholder:text-gray-500 dark:placeholder:text-gray-400"
-                                placeholder="Photo URL"
-                                autoComplete="url"
-                            />
-                        </div>
-
-                        {/* Password Field */}
-                        <div className="flex items-center gap-3 rounded-[25px] p-4 border-0 outline-none bg-gray-100 dark:bg-[#171717] shadow-[inset_2px_5px_10px_rgba(0,0,0,0.08)] dark:shadow-[inset_2px_5px_10px_rgb(5,5,5)] transition-colors duration-300">
-
-                            <svg
-                                viewBox="0 0 16 16"
-                                fill="currentColor"
-                                className="h-5 w-5 fill-gray-700 dark:fill-white shrink-0"
-                            >
-                                <path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z" />
-                            </svg>
-
-                            <input
-                                type="password"
-                                name="password"
-                                required
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                className="bg-transparent border-none outline-none w-full text-gray-900 dark:text-[#d3d3d3] placeholder:text-gray-500 dark:placeholder:text-gray-400"
-                                placeholder="Password"
-                                autoComplete="new-password"
-                            />
-                        </div>
-
-                        {/* Dynamic Password Validation Feedback */}
-                        <div className="rounded-2xl border border-gray-200 bg-gray-50/70 p-3.5 dark:border-white/10 dark:bg-[#202020]/70 text-xs flex flex-col gap-2">
-                            <p className="font-semibold text-gray-700 dark:text-gray-300">
-                                Password Requirements:
-                            </p>
-
-                            <div className="flex flex-col gap-1.5">
-                                <div className="flex items-center gap-2">
-                                    <span
-                                        className={`flex size-4 items-center justify-center rounded-full transition-colors ${
-                                            hasMinLength
-                                                ? "bg-emerald-500 text-white"
-                                                : "bg-gray-200 text-gray-400 dark:bg-white/10 dark:text-gray-500"
-                                        }`}
-                                    >
-                                        {hasMinLength ? (
-                                            <Check className="size-3" strokeWidth={3} />
-                                        ) : (
-                                            <X className="size-2.5" />
-                                        )}
-                                    </span>
-                                    <span
-                                        className={`transition-colors ${
-                                            hasMinLength
-                                                ? "text-emerald-600 dark:text-emerald-400 font-medium"
-                                                : "text-gray-500 dark:text-gray-400"
-                                        }`}
-                                    >
-                                        At least 6 characters
-                                    </span>
-                                </div>
-
-                                <div className="flex items-center gap-2">
-                                    <span
-                                        className={`flex size-4 items-center justify-center rounded-full transition-colors ${
-                                            hasUppercase
-                                                ? "bg-emerald-500 text-white"
-                                                : "bg-gray-200 text-gray-400 dark:bg-white/10 dark:text-gray-500"
-                                        }`}
-                                    >
-                                        {hasUppercase ? (
-                                            <Check className="size-3" strokeWidth={3} />
-                                        ) : (
-                                            <X className="size-2.5" />
-                                        )}
-                                    </span>
-                                    <span
-                                        className={`transition-colors ${
-                                            hasUppercase
-                                                ? "text-emerald-600 dark:text-emerald-400 font-medium"
-                                                : "text-gray-500 dark:text-gray-400"
-                                        }`}
-                                    >
-                                        At least one uppercase letter (A-Z)
-                                    </span>
-                                </div>
-
-                                <div className="flex items-center gap-2">
-                                    <span
-                                        className={`flex size-4 items-center justify-center rounded-full transition-colors ${
-                                            hasLowercase
-                                                ? "bg-emerald-500 text-white"
-                                                : "bg-gray-200 text-gray-400 dark:bg-white/10 dark:text-gray-500"
-                                        }`}
-                                    >
-                                        {hasLowercase ? (
-                                            <Check className="size-3" strokeWidth={3} />
-                                        ) : (
-                                            <X className="size-2.5" />
-                                        )}
-                                    </span>
-                                    <span
-                                        className={`transition-colors ${
-                                            hasLowercase
-                                                ? "text-emerald-600 dark:text-emerald-400 font-medium"
-                                                : "text-gray-500 dark:text-gray-400"
-                                        }`}
-                                    >
-                                        At least one lowercase letter (a-z)
-                                    </span>
-                                </div>
+                                <input
+                                    id="register-name"
+                                    type="text"
+                                    name="name"
+                                    required
+                                    className={inputClass}
+                                    placeholder="Your name"
+                                    autoComplete="name"
+                                />
                             </div>
                         </div>
 
-                        {/* Register Button */}
-                        <div className="flex mt-2">
+                        <div>
+                            <label htmlFor="register-email" className={labelClass}>
+                                Email address
+                            </label>
 
-                            <button
-                                type="submit"
-                                disabled={loading}
-                                className="w-full p-3 rounded-[8px] border border-gray-300 dark:border-transparent outline-none transition-all duration-300 bg-gray-200 dark:bg-[#252525] text-gray-900 dark:text-white hover:bg-gray-300 dark:hover:bg-black disabled:opacity-60 disabled:cursor-not-allowed font-medium"
-                            >
-                                {loading ? "Creating account..." : "Register"}
-                            </button>
+                            <div className={fieldClass}>
+                                <Mail className="size-4 shrink-0 text-gray-400 dark:text-gray-500" />
 
+                                <input
+                                    id="register-email"
+                                    type="email"
+                                    name="email"
+                                    required
+                                    className={inputClass}
+                                    placeholder="you@example.com"
+                                    autoComplete="email"
+                                />
+                            </div>
                         </div>
 
-                        {/* Divider */}
-                        <div className="flex items-center gap-3 my-2">
-                            <div className="flex-1 h-px bg-gray-300 dark:bg-gray-700"></div>
-                            <span className="text-gray-500 dark:text-gray-400 text-sm">OR</span>
-                            <div className="flex-1 h-px bg-gray-300 dark:bg-gray-700"></div>
+                        <div>
+                            <label htmlFor="register-photo" className={labelClass}>
+                                Photo URL{" "}
+                                <span className="font-normal text-gray-400 dark:text-gray-500">
+                                    (optional)
+                                </span>
+                            </label>
+
+                            <div className={fieldClass}>
+                                <ImageIcon className="size-4 shrink-0 text-gray-400 dark:text-gray-500" />
+
+                                <input
+                                    id="register-photo"
+                                    type="url"
+                                    name="photoURL"
+                                    className={inputClass}
+                                    placeholder="https://images.unsplash.com/..."
+                                    autoComplete="url"
+                                />
+                            </div>
                         </div>
 
-                        {/* Google Register */}
+                        <div>
+                            <label htmlFor="register-password" className={labelClass}>
+                                Password
+                            </label>
+
+                            <div className={fieldClass}>
+                                <Lock className="size-4 shrink-0 text-gray-400 dark:text-gray-500" />
+
+                                <input
+                                    id="register-password"
+                                    type={showPassword ? "text" : "password"}
+                                    name="password"
+                                    required
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    className={inputClass}
+                                    placeholder="Create a password"
+                                    autoComplete="new-password"
+                                />
+
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword((value) => !value)}
+                                    aria-label={
+                                        showPassword
+                                            ? "Hide password"
+                                            : "Show password"
+                                    }
+                                    className="text-gray-400 transition-colors hover:text-gray-700 dark:text-gray-500 dark:hover:text-gray-300"
+                                >
+                                    {showPassword ? (
+                                        <EyeOff className="size-4" />
+                                    ) : (
+                                        <Eye className="size-4" />
+                                    )}
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Dynamic password validation feedback */}
+                        <div className="rounded-2xl border border-gray-200 bg-gray-50/70 p-3.5 text-xs dark:border-white/10 dark:bg-[#0d0d0d]">
+                            <p className="font-semibold text-gray-700 dark:text-gray-300">
+                                Password requirements
+                            </p>
+
+                            <div className="mt-2 flex flex-col gap-1.5">
+                                {requirements.map((requirement) => (
+                                    <div
+                                        key={requirement.label}
+                                        className="flex items-center gap-2"
+                                    >
+                                        <span
+                                            className={`flex size-4 items-center justify-center rounded-full transition-colors ${
+                                                requirement.met
+                                                    ? "bg-teal-600 text-white dark:bg-sky-500 dark:text-[#06121a]"
+                                                    : "bg-gray-200 text-gray-400 dark:bg-white/10 dark:text-gray-500"
+                                            }`}
+                                        >
+                                            {requirement.met ? (
+                                                <Check
+                                                    className="size-3"
+                                                    strokeWidth={3}
+                                                />
+                                            ) : (
+                                                <X className="size-2.5" />
+                                            )}
+                                        </span>
+
+                                        <span
+                                            className={`transition-colors ${
+                                                requirement.met
+                                                    ? "font-medium text-teal-700 dark:text-sky-400"
+                                                    : "text-gray-500 dark:text-gray-400"
+                                            }`}
+                                        >
+                                            {requirement.label}
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-full bg-linear-to-r from-teal-600 to-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-blue-600/20 transition-all duration-200 hover:from-teal-500 hover:to-blue-500 hover:shadow-xl active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                            {loading && <Loader2 className="size-4 animate-spin" />}
+                            {loading ? "Creating account..." : "Create account"}
+                        </button>
+
+                        <div className="flex items-center gap-3 py-1">
+                            <span className="h-px flex-1 bg-gray-200 dark:bg-white/10" />
+                            <span className="text-xs font-medium text-gray-400 dark:text-gray-500">
+                                OR
+                            </span>
+                            <span className="h-px flex-1 bg-gray-200 dark:bg-white/10" />
+                        </div>
+
                         <button
                             type="button"
-                            onClick={() => authClient.signIn.social({ provider: "google", callbackURL: "/" })}
-                            className="flex items-center justify-center gap-3 w-full p-3 rounded-[8px] border border-gray-300 dark:border-[#444] bg-gray-100 dark:bg-[#252525] text-gray-900 dark:text-white transition-all duration-300 hover:bg-gray-200 dark:hover:bg-black hover:border-gray-400 dark:hover:border-gray-500"
+                            onClick={() =>
+                                authClient.signIn.social({
+                                    provider: "google",
+                                    callbackURL: "/",
+                                })
+                            }
+                            className="inline-flex w-full items-center justify-center gap-3 rounded-full border border-gray-200 bg-white px-5 py-3 text-sm font-semibold text-gray-800 transition-all duration-200 hover:border-gray-300 hover:bg-gray-50 dark:border-white/10 dark:bg-[#0d0d0d] dark:text-gray-200 dark:hover:border-white/20 dark:hover:bg-white/5"
                         >
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 viewBox="0 0 48 48"
-                                className="w-5 h-5"
+                                className="size-5"
+                                aria-hidden="true"
                             >
                                 <path
                                     fill="#FFC107"
@@ -311,21 +326,18 @@ const RegisterPage = () => {
                                     d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.2 4.3-4.1 5.8l6.9 5.8C42.1 35.7 46 30.3 46 24c0-1.5-.2-2.9-.4-3.5z"
                                 />
                             </svg>
-
                             Continue with Google
                         </button>
 
-                        {/* Login Link */}
-                        <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-3 mb-4">
+                        <p className="mt-2 text-center text-sm text-gray-500 dark:text-gray-400">
                             Already have an account?{" "}
-                            <a
+                            <Link
                                 href="/login"
-                                className="text-gray-900 dark:text-white font-semibold hover:text-green-600 dark:hover:text-[#00ff75] transition-colors"
+                                className="font-semibold text-teal-700 transition-colors hover:text-teal-800 dark:text-sky-400 dark:hover:text-sky-300"
                             >
-                                Login
-                            </a>
+                                Log in
+                            </Link>
                         </p>
-
                     </form>
                 </div>
             </div>

@@ -28,7 +28,7 @@ type NavItem = {
 
 const NAV_LINKS: NavItem[] = [
     { label: "Home", href: "/" },
-    { label: "Studios", href: "/studios", section: "featured" },
+    { label: "Explore Studios", href: "/studios", section: "featured" },
     { label: "Categories", href: "/#categories", section: "categories" },
     { label: "How It Works", href: "/#how", section: "how" },
     { label: "About Us", href: "/#about", section: "about" },
@@ -93,13 +93,6 @@ const Navbar = () => {
             window.removeEventListener("scroll", onScroll);
         };
     }, []);
-
-    /* Reset section when leaving homepage */
-    useEffect(() => {
-        if (pathname !== "/") {
-            setActiveSection(null);
-        }
-    }, [pathname]);
 
     /* Homepage scroll spy */
     useEffect(() => {

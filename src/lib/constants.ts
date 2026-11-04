@@ -1,3 +1,7 @@
+
+export const API_BASE_URL =
+    process.env.NEXT_PUBLIC_API_URL ?? "https://studiospace-backend-oqeo.onrender.com";
+
 export const STUDIO_CATEGORIES = [
     "Photo Studio",
     "Film Stage",
@@ -32,6 +36,8 @@ export type Studio = {
     maxCapacity: number;
     location: string;
     image: string;
+    imageUrl?: string;
+    images?: string[];
     amenities: string[];
     overview: string;
     ownerEmail: string;

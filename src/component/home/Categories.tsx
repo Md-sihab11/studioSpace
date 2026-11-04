@@ -7,12 +7,15 @@ import {
     Drum,
     Mic,
     Palette,
+    Presentation,
     Projector,
     Shapes,
 } from "lucide-react";
 
 type Category = {
     name: string;
+    /** Exact value stored in MongoDB's `studios.category` field. */
+    value: string;
     description: string;
     studios: number;
     image: string;
@@ -21,14 +24,16 @@ type Category = {
 
 const CATEGORIES: Category[] = [
     {
-        name: "Photography Studios",
+        name: "Photo Studios",
+        value: "Photo Studio",
         description: "Cycloramas & daylight lofts",
         studios: 480,
         image: "https://images.unsplash.com/photo-1554048612-b6a482bc67e5?auto=format&fit=crop&w=800&q=80",
         icon: Camera,
     },
     {
-        name: "Film & Sound",
+        name: "Sound Stages",
+        value: "Film Stage",
         description: "Stages, sets & edit bays",
         studios: 310,
         image: "https://images.unsplash.com/photo-1478720568477-152d9b164e26?auto=format&fit=crop&w=800&q=80",
@@ -36,6 +41,7 @@ const CATEGORIES: Category[] = [
     },
     {
         name: "Podcast Rooms",
+        value: "Podcast Lounge",
         description: "Acoustically treated booths",
         studios: 260,
         image: "https://images.unsplash.com/photo-1478737270239-2f02b77fc618?auto=format&fit=crop&w=800&q=80",
@@ -43,6 +49,7 @@ const CATEGORIES: Category[] = [
     },
     {
         name: "Music Suites",
+        value: "Music Suite",
         description: "Tracking & rehearsal rooms",
         studios: 395,
         image: "https://images.unsplash.com/photo-1520523839897-bd0b52f945a0?auto=format&fit=crop&w=800&q=80",
@@ -50,13 +57,23 @@ const CATEGORIES: Category[] = [
     },
     {
         name: "Art Workshops",
+        value: "Art Studio",
         description: "Paint, print & ceramics",
         studios: 175,
         image: "https://images.unsplash.com/photo-1461344577544-4e5dc9487184?auto=format&fit=crop&w=800&q=80",
         icon: Palette,
     },
     {
+        name: "Creative Workshops",
+        value: "Workshop",
+        description: "Training & collaboration hubs",
+        studios: 240,
+        image: "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=800&q=80",
+        icon: Presentation,
+    },
+    {
         name: "Rehearsal Spaces",
+        value: "Rehearsal Space",
         description: "Dance & performance rooms",
         studios: 210,
         image: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?auto=format&fit=crop&w=800&q=80",
@@ -91,13 +108,13 @@ const Categories = () => {
                 {/* Expandable Category Carousel */}
                 <div className="mt-12 flex h-[420px] w-full gap-2 sm:h-[500px] sm:gap-3">
 
-                    {CATEGORIES.map((category, index) => {
+                    {CATEGORIES.map((category) => {
                         const Icon = category.icon;
 
                         return (
                             <Link
                                 key={category.name}
-                                href="/#featured"
+                                href={`/studios?category=${encodeURIComponent(category.value)}`}
                                 aria-label={`Browse ${category.name}`}
                                 className="group relative min-w-0 flex-[1] cursor-pointer overflow-hidden rounded-2xl shadow-md transition-[flex] duration-500 ease-in-out hover:flex-[3] sm:rounded-3xl sm:hover:flex-[2.5]"
                             >

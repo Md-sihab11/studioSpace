@@ -3,7 +3,7 @@
 import React, { Suspense, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
     Aperture,
     ArrowUpRight,
@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/empty";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { API_BASE_URL } from "@/lib/constants";
 
 /** Document shape returned by GET /studios. */
 type RemoteStudio = {
@@ -89,22 +90,37 @@ const isUnsplashUrl = (url: string | undefined): boolean => {
 
 /** Inner explore content that uses search params safely within Suspense. */
 const StudiosContent = () => {
+    const router = useRouter();
+    const pathname = usePathname();
     const searchParams = useSearchParams();
-    const urlCategory = searchParams.get("category") || "All";
+    const activeCategory = searchParams.get("category") || "All";
 
     const [studios, setStudios] = useState<RemoteStudio[]>([]);
     const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
     const [error, setError] = useState("");
     const [query, setQuery] = useState("");
-    const [activeCategory, setActiveCategory] = useState(urlCategory);
     const [reloadKey, setReloadKey] = useState(0);
 
-    // Sync state if URL query param changes
-    useEffect(() => {
-        if (urlCategory) {
-            setActiveCategory(urlCategory);
+    /**
+     * Category is derived from the URL rather than mirrored in state, so
+     * /studios?category=... is the single source of truth and refreshing
+     * the page keeps the same filter.
+     */
+    const setCategory = (category: string) => {
+        const params = new URLSearchParams(searchParams.toString());
+
+        if (category === "All") {
+            params.delete("category");
+        } else {
+            params.set("category", category);
         }
-    }, [urlCategory]);
+
+        const queryString = params.toString();
+        router.replace(
+            queryString ? `${pathname}?${queryString}` : pathname,
+            { scroll: false }
+        );
+    };
 
     useEffect(() => {
         let cancelled = false;
@@ -112,7 +128,7 @@ const StudiosContent = () => {
         (async () => {
             try {
                 const res = await fetch(
-                    `https://studiospace-backend-oqeo.onrender.com/studios`,
+                    `${API_BASE_URL}/studios`,
                     {
                         signal: AbortSignal.timeout(60_000),
                     }
@@ -123,7 +139,6 @@ const StudiosContent = () => {
                 }
 
                 const data: unknown = await res.json();
-                console.log("API working", data);
 
                 if (!Array.isArray(data)) {
                     throw new Error("The studios API returned an unexpected payload");
@@ -192,7 +207,7 @@ const StudiosContent = () => {
 
     const clearFilters = () => {
         setQuery("");
-        setActiveCategory("All");
+        setCategory("All");
     };
 
     const hasActiveFilter = query.trim() !== "" || activeCategory !== "All";
@@ -262,7 +277,7 @@ const StudiosContent = () => {
                             <button
                                 key={cat}
                                 type="button"
-                                onClick={() => setActiveCategory(cat)}
+                                onClick={() => setCategory(cat)}
                                 aria-pressed={isActive}
                                 className={`shrink-0 rounded-full px-4 py-1.5 text-xs font-semibold transition-all duration-200 ${
                                     isActive

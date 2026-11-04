@@ -2,9 +2,8 @@ import { Sparkles } from "lucide-react";
 import StudioForm from "@/component/studio-form/StudioForm";
 
 /**
- * Header + create form. StudioForm submits to POST /api/studios — the page
- * itself must not call the backend: a POST fired during render hung this route
- * whenever the Render service was asleep and inserted empty records.
+ * Header + create form. StudioForm grabs the session JWT right before it
+ * submits to the backend, so this page stays a plain static shell.
  */
 const AddStudioPage = () => {
     return (

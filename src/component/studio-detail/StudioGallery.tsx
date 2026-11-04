@@ -32,7 +32,6 @@ const StudioGallery = ({ images, title, category, rating, reviewCount }: StudioG
 
     useEffect(() => {
         if (!api) return;
-        setCurrent(api.selectedScrollSnap());
         const onSelect = () => setCurrent(api.selectedScrollSnap());
         api.on("select", onSelect);
         return () => {

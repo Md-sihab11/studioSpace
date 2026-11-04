@@ -1,6 +1,6 @@
 "use client"
 
-import { toast } from "react-toastify"
+import { toast as sonnerToast } from "sonner"
 import { useCallback } from "react"
 
 export function useToast() {
@@ -15,24 +15,24 @@ export function useToast() {
         ? `${options.title ? options.title + " — " : ""}${options.description}`
         : options.title ?? ""
 
-      const autoClose = options.timeout ?? 3500
+      const duration = options.timeout ?? 3500
 
       switch (options.type) {
         case "success":
-          toast.success(message, { autoClose })
+          sonnerToast.success(message, { duration })
           break
         case "error":
-          toast.error(message, { autoClose })
+          sonnerToast.error(message, { duration })
           break
         case "warning":
-          toast.warn(message, { autoClose })
+          sonnerToast.warning(message, { duration })
           break
         case "loading":
-          toast.loading(message, { autoClose })
+          sonnerToast.loading(message, { duration })
           break
         case "info":
         default:
-          toast.info(message, { autoClose })
+          sonnerToast.info(message, { duration })
           break
       }
     },

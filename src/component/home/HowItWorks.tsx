@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { CalendarCheck, CreditCard, Search, Sparkles } from "lucide-react";
+import { CalendarClock, CreditCard, Search, Sparkles } from "lucide-react";
 
 type Step = {
     step: string;
@@ -12,31 +12,31 @@ type Step = {
 const STEPS: Step[] = [
     {
         step: "01",
-        title: "Search & Discover",
+        title: "Discover Spaces",
         description:
             "Filter by city, category, gear and hourly rate until the perfect room surfaces.",
         icon: Search,
     },
     {
         step: "02",
-        title: "Compare & Choose",
+        title: "Select Shoot Hours",
         description:
-            "Read verified reviews, browse gallery photos and check real-time availability.",
-        icon: Sparkles,
+            "Compare availability, pick your date and reserve the exact hours your shoot needs.",
+        icon: CalendarClock,
     },
     {
         step: "03",
-        title: "Book & Pay",
+        title: "Book Instantly",
         description:
-            "Reserve your hours with secure checkout and get instant confirmation by email.",
+            "Confirm in a couple of clicks with transparent hourly pricing and no back-and-forth.",
         icon: CreditCard,
     },
     {
         step: "04",
-        title: "Create & Enjoy",
+        title: "Create & Produce",
         description:
             "Show up, plug in and make something great — your host is one message away.",
-        icon: CalendarCheck,
+        icon: Sparkles,
     },
 ];
 

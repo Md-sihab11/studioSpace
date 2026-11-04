@@ -19,6 +19,7 @@ import {
 import { cn } from "cn";
 import StudioGallery from "@/component/studio-detail/StudioGallery";
 import BookingModal from "@/component/studio-detail/BookingModal";
+import { API_BASE_URL } from "@/lib/constants";
 import { SAMPLE_REVIEWS } from "@/lib/sample-reviews";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -99,13 +100,13 @@ const StudioDetailsPage = ({ params }: { params: Promise<{ id: string }> }) => {
                 // Primary: single-document endpoint.
                 try {
                     const res = await fetch(
-                        `https://studiospace-backend-oqeo.onrender.com/studios/${encodeURIComponent(id)}`,
+                        `${API_BASE_URL}/studios/${encodeURIComponent(id)}`,
                         { signal: AbortSignal.timeout(60_000) }
                     );
 
                     if (res.ok) {
                         const data: unknown = await res.json();
-                        console.log("API working", data);
+                        
 
                         if (data && typeof data === "object" && "_id" in data) {
                             found = data as RemoteStudio;
@@ -118,7 +119,7 @@ const StudioDetailsPage = ({ params }: { params: Promise<{ id: string }> }) => {
                 // Fallback: find the document in the full list.
                 if (!found) {
                     const res = await fetch(
-                        `https://studiospace-backend-oqeo.onrender.com/studios`,
+                        `${API_BASE_URL}/studios`,
                         {
                             signal: AbortSignal.timeout(60_000),
                         }
@@ -129,7 +130,7 @@ const StudioDetailsPage = ({ params }: { params: Promise<{ id: string }> }) => {
                     }
 
                     const data: unknown = await res.json();
-                    console.log("API working", data);
+                    
 
                     if (!Array.isArray(data)) {
                         throw new Error("The studios API returned an unexpected payload");
