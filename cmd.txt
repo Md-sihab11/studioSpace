@@ -1,7 +1,0 @@
-step by step
-1. npx shadcn@latest add --all
-2. npx shadcn@latest init
-3. npx create-next-app@latest studiospace
-4.npm install better-auth
-5. npm i mongodb
-6.npm i react-toastify
