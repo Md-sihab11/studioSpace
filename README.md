@@ -73,7 +73,7 @@ cd studioSpace-Backend
 npm install
 ```
 
-Create `.env` from `.env.example`:
+Create `.env`:
 
 ```env
 PORT=8000
@@ -99,14 +99,14 @@ cd studioSpace
 npm install
 ```
 
-Create `.env.local` from `.env.example`:
+Create `.env`:
 
 ```env
 BETTER_AUTH_URL=http://localhost:3000
 BETTER_AUTH_SECRET=replace-with-a-long-random-string
 MONGODB_URI=mongodb+srv://<user>:<password>@<cluster>.mongodb.net/
 NEXT_PUBLIC_API_URL=http://localhost:8000
-NEXT_PUBLIC_IMGBB_API_KEY=your-imgbb-key
+NEXT_PUBLIC_IMGBB_API_KEY=
 ```
 
 Optional Google sign-in:
@@ -144,7 +144,7 @@ Open `http://localhost:3000`.
 | `NEXT_PUBLIC_IMGBB_API_KEY` | Frontend | imgbb cover/gallery uploads |
 | `PORT` | Backend | Local Express port (default `8000`) |
 
-Secrets are never committed; only `.env.example` files are tracked.
+Secrets are never committed; only `.env` files are tracked locally and are gitignored. On Vercel, set the same values in each project's Environment Variables settings.
 
 ## API Overview
 
