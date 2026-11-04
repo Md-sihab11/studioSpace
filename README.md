@@ -11,15 +11,6 @@ StudioSpace is a full-stack marketplace where creators discover, compare and boo
 | **Frontend repository** | https://github.com/Md-sihab11/studioSpace |
 | **Backend repository** | https://github.com/Md-sihab11/studioSpace-Backend |
 
-### Examiner Test Credentials
-
-| Field | Value |
-| --- | --- |
-| Email | `examiner@studiospace.dev` |
-| Password | `Examiner123` |
-
-The account is a normal user, so it can browse studios, create a listing, edit/delete its own listing and make or cancel bookings. Sign in at **https://studiospace-vert.vercel.app/login**.
-
 ## Features
 
 - **Curated home page** — Swiper hero carousel, live featured studios, category shortcuts and a four-step “how it works” section.
