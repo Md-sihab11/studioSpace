@@ -65,32 +65,52 @@ const HowItWorks = () => {
                     </p>
                 </div>
 
+                {/* Timeline: vertical on mobile/tablet, horizontal on laptop+ */}
                 <div className="relative mt-14">
                     <div
                         aria-hidden="true"
-                        className="absolute top-7 right-[12.5%] left-[12.5%] hidden h-px bg-linear-to-r from-transparent via-white/15 to-transparent lg:block"
+                        className="absolute top-7 right-[12.5%] left-[12.5%] hidden h-px bg-linear-to-r from-transparent via-[#B7F36B]/40 to-transparent lg:block"
                     />
 
-                    <ol className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-                        {STEPS.map((item) => {
+                    <ol className="relative flex flex-col gap-8 sm:mx-auto sm:max-w-2xl lg:max-w-none lg:grid lg:grid-cols-4 lg:gap-6">
+                        {STEPS.map((item, index) => {
                             const Icon = item.icon;
+                            const isLast = index === STEPS.length - 1;
                             return (
                                 <li
                                     key={item.step}
-                                    className="group relative rounded-3xl border border-white/10 bg-white/[0.04] p-6 backdrop-blur-sm transition-all duration-300 hover:border-[#B7F36B]/40 hover:bg-white/[0.07] hover:shadow-2xl hover:shadow-lime-500/5"
+                                    className="group relative flex gap-5 lg:flex-col lg:gap-0"
                                 >
-                                    <div className="flex items-center justify-between">
-                                        <span className="relative flex size-14 items-center justify-center rounded-2xl bg-linear-to-br from-[#B7F36B] to-lime-400 shadow-lg shadow-lime-500/20 transition-transform duration-300 group-hover:scale-105">
-                                            <Icon className="size-6 text-black" />
-                                        </span>
-                                        <span className="font-mono text-3xl font-bold text-white/10 transition-colors duration-300 group-hover:text-white/25">
+                                    {/* Mobile/tablet: spine segment reaching the next node */}
+                                    {!isLast && (
+                                        <span
+                                            aria-hidden="true"
+                                            className="absolute top-14 -bottom-8 left-7 w-px bg-[#B7F36B]/30 transition-colors duration-300 group-hover:bg-[#B7F36B]/70 lg:hidden"
+                                        />
+                                    )}
+
+                                    {/* Laptop+: short stem from the node down to its card */}
+                                    <span
+                                        aria-hidden="true"
+                                        className="absolute top-14 left-1/2 hidden h-6 w-px -translate-x-1/2 bg-[#B7F36B]/30 transition-colors duration-300 group-hover:bg-[#B7F36B]/70 lg:block"
+                                    />
+
+                                    {/* Node sitting on the timeline */}
+                                    <span className="relative z-10 flex size-14 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-[#B7F36B] to-lime-400 shadow-[0_0_0_6px_rgba(183,243,107,0.06)] transition-transform duration-300 group-hover:scale-110 lg:self-center">
+                                        <Icon className="size-6 text-black" />
+                                        <span className="absolute -top-1.5 -right-1.5 flex size-5 items-center justify-center rounded-full bg-[#050505] text-[10px] font-bold text-[#B7F36B] ring-1 ring-[#B7F36B]/50">
                                             {item.step}
                                         </span>
+                                    </span>
+
+                                    <div className="flex flex-1 flex-col rounded-2xl border border-white/10 bg-white/[0.04] p-5 backdrop-blur-sm transition-all duration-300 hover:border-[#B7F36B]/40 hover:bg-white/[0.07] hover:shadow-2xl hover:shadow-lime-500/5 lg:mt-6">
+                                        <h3 className="text-base font-bold text-white sm:text-lg">
+                                            {item.title}
+                                        </h3>
+                                        <p className="mt-2 text-sm leading-6 text-gray-400">
+                                            {item.description}
+                                        </p>
                                     </div>
-                                    <h3 className="mt-5 text-lg font-bold text-white">{item.title}</h3>
-                                    <p className="mt-2 text-sm leading-6 text-gray-400">
-                                        {item.description}
-                                    </p>
                                 </li>
                             );
                         })}
