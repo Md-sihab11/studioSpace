@@ -166,11 +166,11 @@ const HeroSlider = () => {
                                     paragraph wraps instead of being clipped by long headline words. */}
                                 <div className="w-full max-w-2xl">
                                     <h1
-                                        className="text-4xl leading-[0.95] font-extrabold tracking-tight text-white uppercase break-words min-[480px]:text-5xl sm:text-6xl md:text-7xl lg:text-8xl"
+                                        className="text-[clamp(1.75rem,7.5vw,3rem)] leading-[0.95] font-extrabold tracking-tight text-white uppercase sm:text-6xl md:text-7xl lg:text-8xl"
                                         style={{ textShadow: "0 4px 40px rgba(0,0,0,0.35)" }}
                                     >
                                         <span
-                                            className="-mr-px block"
+                                            className="block whitespace-nowrap"
                                             style={{
                                                 WebkitTextStroke: "1.5px rgba(255,255,255,0.92)",
                                                 color: "transparent",
@@ -178,7 +178,9 @@ const HeroSlider = () => {
                                         >
                                             {slide.outline}
                                         </span>
-                                        <span className="block font-black">{slide.solid}</span>
+                                        <span className="block whitespace-nowrap font-black">
+                                            {slide.solid}
+                                        </span>
                                     </h1>
 
                                     <p className="mt-4 max-w-xl text-sm leading-7 text-white/75 sm:mt-6 sm:text-base sm:leading-8">
