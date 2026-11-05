@@ -7,9 +7,11 @@ import {
     ArrowRight,
     CalendarClock,
     Compass,
+    DollarSign,
     PlusCircle,
     ShieldCheck,
     Sparkles,
+    TrendingUp,
     User,
 } from "lucide-react";
 import { useSession } from "@/lib/auth-client";
@@ -48,6 +50,28 @@ const DashboardPage = () => {
                         </Button>
                     </Link>
                 </div>
+            </div>
+
+            {/* Stats Overview */}
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                {[
+                    { label: "Active Listings", value: "3", icon: Aperture, color: "bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400" },
+                    { label: "Total Bookings", value: "12", icon: CalendarClock, color: "bg-purple-50 text-purple-600 dark:bg-purple-500/10 dark:text-purple-400" },
+                    { label: "Earnings (Month)", value: "$1,240", icon: DollarSign, color: "bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400" },
+                    { label: "Avg. Rating", value: "4.8", icon: TrendingUp, color: "bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400" },
+                ].map((stat) => (
+                    <Card key={stat.label} className="rounded-2xl border-border bg-card p-5 transition-all duration-200">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <p className="text-sm font-medium text-muted-foreground">{stat.label}</p>
+                                <p className="mt-1 text-2xl font-bold text-foreground">{stat.value}</p>
+                            </div>
+                            <span className={`flex size-11 items-center justify-center rounded-xl ${stat.color}`}>
+                                <stat.icon className="size-5" />
+                            </span>
+                        </div>
+                    </Card>
+                ))}
             </div>
 
             {/* Quick Action Navigation Cards */}

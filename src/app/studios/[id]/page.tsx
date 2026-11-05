@@ -51,6 +51,14 @@ type RemoteStudio = {
     ownerName?: string;
     rating?: number;
     reviews?: number;
+    /** Individual reviews from the backend (if available) */
+    reviewDetails?: Array<{
+        id: string;
+        name: string;
+        rating: number;
+        date: string;
+        text: string;
+    }>;
 };
 
 type Status = "loading" | "ready" | "error" | "not-found";
@@ -200,7 +208,15 @@ const StudioDetailsPage = ({ params }: { params: Promise<{ id: string }> }) => {
             return studio.reviews;
         }
 
-        return SAMPLE_REVIEWS.length;
+        return 0; // Show 0 if no real reviews
+    }, [studio]);
+
+    // Use real reviews from backend if available, otherwise empty array
+    const realReviews = useMemo(() => {
+        if (studio?.reviewDetails && Array.isArray(studio.reviewDetails) && studio.reviewDetails.length > 0) {
+            return studio.reviewDetails;
+        }
+        return [];
     }, [studio]);
 
     /* ── Loading ── */
@@ -500,43 +516,51 @@ const StudioDetailsPage = ({ params }: { params: Promise<{ id: string }> }) => {
                             </span>
                         </div>
 
-                        <div className="mt-5 grid gap-4 sm:grid-cols-2">
-                            {SAMPLE_REVIEWS.map((review) => (
-                                <div
-                                    key={review.id}
-                                    className="rounded-xl border border-gray-100 bg-gray-50 p-4 dark:border-white/5 dark:bg-white/[0.03]"
-                                >
-                                    <div className="flex items-center justify-between gap-2">
-                                        <div className="flex items-center gap-2.5">
-                                            <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-teal-50 text-xs font-bold text-teal-700 dark:bg-sky-500/10 dark:text-sky-400">
-                                                {review.name
-                                                    .split(/\s+/)
-                                                    .map((part) => part[0])
-                                                    .slice(0, 2)
-                                                    .join("")
-                                                    .toUpperCase()}
-                                            </span>
+                        {realReviews.length > 0 ? (
+                            <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                                {realReviews.map((review) => (
+                                    <div
+                                        key={review.id}
+                                        className="rounded-xl border border-gray-100 bg-gray-50 p-4 dark:border-white/5 dark:bg-white/[0.03]"
+                                    >
+                                        <div className="flex items-center justify-between gap-2">
+                                            <div className="flex items-center gap-2.5">
+                                                <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-teal-50 text-xs font-bold text-teal-700 dark:bg-sky-500/10 dark:text-sky-400">
+                                                    {review.name
+                                                        .split(/\s+/)
+                                                        .map((part) => part[0])
+                                                        .slice(0, 2)
+                                                        .join("")
+                                                        .toUpperCase()}
+                                                </span>
 
-                                            <div>
-                                                <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                                                    {review.name}
-                                                </p>
+                                                <div>
+                                                    <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                                                        {review.name}
+                                                    </p>
 
-                                                <p className="text-xs text-gray-500 dark:text-gray-400">
-                                                    {review.date}
-                                                </p>
+                                                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                                                        {review.date}
+                                                    </p>
+                                                </div>
                                             </div>
+
+                                            <StarRow rating={review.rating} />
                                         </div>
 
-                                        <StarRow rating={review.rating} />
+                                        <p className="mt-3 text-sm leading-6 text-gray-600 dark:text-gray-300">
+                                            {review.text}
+                                        </p>
                                     </div>
-
-                                    <p className="mt-3 text-sm leading-6 text-gray-600 dark:text-gray-300">
-                                        {review.text}
-                                    </p>
-                                </div>
-                            ))}
-                        </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="mt-5 text-center py-8">
+                                <p className="text-gray-500 dark:text-gray-400">
+                                    No reviews yet — be the first to share your experience!
+                                </p>
+                            </div>
+                        )}
                     </div>
                 </div>
 
