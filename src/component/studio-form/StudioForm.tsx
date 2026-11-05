@@ -113,7 +113,6 @@ const StudioForm = ({
 
     const user = session?.user;
 
-    // Update form values
     const set = (
         key: keyof StudioFormValues,
         value: string | string[]
@@ -129,7 +128,6 @@ const StudioForm = ({
         }));
     };
 
-    // Toggle amenities
     const toggleAmenity = (
         amenity: string,
         checked: boolean
@@ -142,7 +140,6 @@ const StudioForm = ({
         );
     };
 
-    // Upload / replace the cover photo.
     const handleCoverUpload = async (
         event: React.ChangeEvent<HTMLInputElement>
     ) => {
@@ -172,7 +169,6 @@ const StudioForm = ({
         }
     };
 
-    // Upload one or more additional gallery photos.
     const handleGalleryUpload = async (
         event: React.ChangeEvent<HTMLInputElement>
     ) => {
@@ -215,7 +211,6 @@ const StudioForm = ({
         );
     };
 
-    // Form validation
     const validate = () => {
         const next: typeof errors = {};
 
@@ -274,7 +269,6 @@ const StudioForm = ({
         return Object.keys(next).length === 0;
     };
 
-    // Submit form
     const handleSubmit = async (
         e: React.FormEvent<HTMLFormElement>
     ) => {
@@ -404,7 +398,6 @@ const StudioForm = ({
             <CardContent>
                 <form onSubmit={handleSubmit} noValidate>
                     <FieldGroup className="grid gap-4 sm:grid-cols-2">
-                        {/* Title */}
                         <Field>
                             <FieldLabel htmlFor="studio-title">
                                 Title
@@ -427,7 +420,6 @@ const StudioForm = ({
                             )}
                         </Field>
 
-                        {/* Category */}
                         <Field>
                             <FieldLabel htmlFor="studio-category">
                                 Category
@@ -463,7 +455,6 @@ const StudioForm = ({
                             )}
                         </Field>
 
-                        {/* Hourly Rate */}
                         <Field>
                             <FieldLabel htmlFor="studio-rate">
                                 Hourly Rate ($)
@@ -490,7 +481,6 @@ const StudioForm = ({
                             )}
                         </Field>
 
-                        {/* Security Deposit */}
                         <Field>
                             <FieldLabel htmlFor="studio-deposit">
                                 Security Deposit ($)
@@ -520,7 +510,6 @@ const StudioForm = ({
                             )}
                         </Field>
 
-                        {/* Max Capacity */}
                         <Field>
                             <FieldLabel htmlFor="studio-capacity">
                                 Max Capacity
@@ -547,7 +536,6 @@ const StudioForm = ({
                             )}
                         </Field>
 
-                        {/* Location */}
                         <Field>
                             <FieldLabel htmlFor="studio-location">
                                 Location / Address
@@ -575,7 +563,6 @@ const StudioForm = ({
                             )}
                         </Field>
 
-                        {/* Cover image */}
                         <Field className="sm:col-span-2">
                             <FieldLabel htmlFor="studio-image">
                                 Cover Image
@@ -640,7 +627,6 @@ const StudioForm = ({
                             )}
                         </Field>
 
-                        {/* Gallery images */}
                         <Field className="sm:col-span-2">
                             <FieldLabel>Gallery Photos</FieldLabel>
 
@@ -692,7 +678,6 @@ const StudioForm = ({
                         </Field>
                     </FieldGroup>
 
-                    {/* Amenities */}
                     <Field className="mt-5">
                         <FieldLabel>Amenities</FieldLabel>
 
@@ -724,7 +709,6 @@ const StudioForm = ({
                         </div>
                     </Field>
 
-                    {/* Overview */}
                     <Field className="mt-5">
                         <FieldLabel htmlFor="studio-overview">
                             Detailed Overview
@@ -748,7 +732,6 @@ const StudioForm = ({
                         )}
                     </Field>
 
-                    {/* Read-only owner */}
                     <FieldGroup className="mt-5 grid gap-4 sm:grid-cols-2">
                         <Field>
                             <FieldLabel htmlFor="studio-owner-email">
@@ -783,7 +766,6 @@ const StudioForm = ({
                         </Field>
                     </FieldGroup>
 
-                    {/* Buttons */}
                     <div className="mt-6 flex justify-end gap-3">
                         <Button
                             type="button"

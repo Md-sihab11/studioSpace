@@ -34,7 +34,6 @@ const RegisterPage = () => {
     const [showPassword, setShowPassword] = useState(false);
     const { toast } = useToast();
 
-    // Real-time password criteria
     const hasMinLength = password.length >= 6;
     const hasUppercase = /[A-Z]/.test(password);
     const hasLowercase = /[a-z]/.test(password);
@@ -101,7 +100,6 @@ const RegisterPage = () => {
 
     return (
         <div className="relative min-h-[calc(100vh-72px)] overflow-hidden bg-gray-50 px-4 py-12 transition-colors duration-300 dark:bg-[#0a0a0a] sm:px-6">
-            {/* Soft brand glow */}
             <div
                 aria-hidden="true"
                 className="pointer-events-none absolute -top-24 left-1/2 h-72 w-[36rem] -translate-x-1/2 rounded-full bg-linear-to-r from-teal-400/20 via-blue-500/15 to-transparent blur-3xl dark:from-sky-500/15 dark:via-blue-500/10"
@@ -233,7 +231,6 @@ const RegisterPage = () => {
                             </div>
                         </div>
 
-                        {/* Dynamic password validation feedback */}
                         <div className="rounded-2xl border border-gray-200 bg-gray-50/70 p-3.5 text-xs dark:border-white/10 dark:bg-[#0d0d0d]">
                             <p className="font-semibold text-gray-700 dark:text-gray-300">
                                 Password requirements

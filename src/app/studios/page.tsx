@@ -168,13 +168,11 @@ const StudiosContent = () => {
         };
     }, [reloadKey]);
 
-    /* Retry from the error state. */
     const retry = () => {
         setStatus("loading");
         setReloadKey((key) => key + 1);
     };
 
-    /* Dynamically derive categories from fetched data */
     const ALL_CATEGORIES = useMemo(() => {
         const cats = new Set<string>();
         studios.forEach((s) => {
@@ -221,7 +219,6 @@ const StudiosContent = () => {
 
     return (
         <section className="mx-auto w-full max-w-[1600px] px-4 pt-10 pb-16 sm:px-6 lg:px-8 xl:px-10">
-            {/* Heading */}
             <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
                 Explore All Studios
             </h1>
@@ -230,7 +227,6 @@ const StudiosContent = () => {
                 Find your perfect creative space.
             </p>
 
-            {/* Search & Results Bar */}
             <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <p aria-live="polite" className="text-sm text-muted-foreground">
                     {countLabel}
@@ -261,7 +257,6 @@ const StudiosContent = () => {
                 </div>
             </div>
 
-            {/* Category Filter Pills */}
             {status !== "loading" && ALL_CATEGORIES.length > 1 && (
                 <div
                     role="group"
@@ -292,7 +287,6 @@ const StudiosContent = () => {
                 </div>
             )}
 
-            {/* Active filters summary */}
             {hasActiveFilter && status === "ready" && (
                 <div className="mt-4 flex flex-wrap items-center justify-between gap-2 text-sm text-muted-foreground">
                     <p>
@@ -319,7 +313,6 @@ const StudiosContent = () => {
             )}
 
             {status === "loading" ? (
-                /* Skeleton while the backend responds */
                 <div
                     aria-hidden="true"
                     className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"
@@ -341,7 +334,6 @@ const StudiosContent = () => {
                     ))}
                 </div>
             ) : status === "error" ? (
-                /* Backend unreachable */
                 <div className="mt-8">
                     <Empty className="border border-dashed py-16">
                         <EmptyHeader>
@@ -368,7 +360,6 @@ const StudiosContent = () => {
                     </Empty>
                 </div>
             ) : filtered.length > 0 ? (
-                /* Studio grid */
                 <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                     {filtered.map((studio) => {
                         const cover = coverOf(studio);
@@ -378,7 +369,6 @@ const StudiosContent = () => {
                                 key={studio._id}
                                 className="group relative gap-0 p-0 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl hover:shadow-black/5 hover:ring-foreground/20"
                             >
-                                {/* Image */}
                                 <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted">
                                     {cover ? (
                                         isUnsplashUrl(cover) ? (
@@ -464,7 +454,6 @@ const StudiosContent = () => {
                                     </span>
                                 </div>
 
-                                {/* Whole-card link */}
                                 <Link
                                     href={`/studios/${studio._id}`}
                                     aria-label={`View ${studio.title}`}
@@ -475,7 +464,6 @@ const StudiosContent = () => {
                     })}
                 </div>
             ) : (
-                /* No matches for the search and category filters */
                 <div className="mt-8">
                     <Empty className="border border-dashed py-16">
                         <EmptyHeader>

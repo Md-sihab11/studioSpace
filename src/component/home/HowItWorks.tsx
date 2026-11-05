@@ -46,14 +46,12 @@ const HowItWorks = () => {
             id="how"
             className="relative scroll-mt-24 overflow-hidden bg-[#050505] py-16 sm:py-20 lg:py-24"
         >
-            {/* Ambient glow */}
             <div
                 aria-hidden="true"
                 className="pointer-events-none absolute -top-32 left-1/2 h-80 w-[42rem] -translate-x-1/2 rounded-full bg-lime-400/10 blur-3xl"
             />
 
             <div className="relative mx-auto w-full max-w-[1600px] px-4 sm:px-6 lg:px-8 xl:px-10">
-                {/* Section header */}
                 <div className="mx-auto max-w-2xl text-center">
                     <p className="text-xs font-semibold tracking-[0.2em] text-[#B7F36B] uppercase">
                         Simple by design
@@ -67,9 +65,7 @@ const HowItWorks = () => {
                     </p>
                 </div>
 
-                {/* Steps */}
                 <div className="relative mt-14">
-                    {/* Connecting line (desktop) */}
                     <div
                         aria-hidden="true"
                         className="absolute top-7 right-[12.5%] left-[12.5%] hidden h-px bg-linear-to-r from-transparent via-white/15 to-transparent lg:block"
@@ -101,7 +97,6 @@ const HowItWorks = () => {
                     </ol>
                 </div>
 
-                {/* Bottom CTA */}
                 <div className="mt-12 flex flex-col items-center gap-4 text-center sm:mt-14">
                     <p className="text-sm text-gray-400">
                         Have a space of your own? Turn your studio into income.

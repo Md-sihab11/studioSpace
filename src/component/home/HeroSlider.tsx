@@ -42,6 +42,30 @@ const SLIDES: HeroSlide[] = [
             "Isolated vocal booths, analog consoles and engineered control rooms, ready when inspiration strikes — day or night.",
         image: "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?auto=format&fit=crop&w=1920&q=80",
     },
+    {
+        outline: "Music",
+        solid: "Rehearsal",
+        description:
+            "Fully equipped rehearsal spaces with instruments, amplifiers and acoustic treatment, built for bands and musicians to create together.",
+        image:
+            "https://images.unsplash.com/photo-1516280440614-37939bbacd81?auto=format&fit=crop&w=1920&q=80",
+    },
+    {
+        outline: "Dance",
+        solid: "Studio",
+        description:
+            "Spacious dance floors, mirrored walls and professional sound systems, perfect for choreography, dance classes and movement rehearsals.",
+        image:
+            "https://images.unsplash.com/photo-1504609813442-a8924e83f76e?auto=format&fit=crop&w=1920&q=80",
+    },
+    {
+        outline: "Art",
+        solid: "Studio",
+        description:
+            "Inspiring creative spaces with natural lighting, flexible workstations and room for painters, designers and visual artists to create.",
+        image:
+            "https://images.unsplash.com/photo-1513364776144-60967b0f800f?auto=format&fit=crop&w=1920&q=80",
+    },
 ];
 
 function LinkedinIcon({ className }: SocialIconProps) {
@@ -136,11 +160,13 @@ const HeroSlider = () => {
                             <div className="absolute inset-0 bg-linear-to-r from-[#1a1c23]/95 via-[#1a1c23]/60 to-[#1a1c23]/10" />
                             <div className="absolute inset-0 bg-linear-to-t from-[#1a1c23]/85 via-transparent to-[#1a1c23]/30" />
 
-                            {/* Slide content */}
-                            <div className="relative mx-auto flex h-full w-full max-w-[1600px] items-center px-4 sm:px-6 lg:px-8 xl:px-10 lg:pl-32">
-                                <div className="max-w-2xl">
+                            {/* Slide content — pb keeps text clear of the bottom dots/scroll button on small screens */}
+                            <div className="relative mx-auto flex h-full w-full max-w-[1600px] items-center px-4 pb-24 sm:px-6 sm:pb-20 lg:px-8 lg:pb-12 lg:pl-32 xl:px-10 xl:pl-32">
+                                {/* w-full + max-w-2xl: the block never grows wider than the viewport, so the
+                                    paragraph wraps instead of being clipped by long headline words. */}
+                                <div className="w-full max-w-2xl">
                                     <h1
-                                        className="text-6xl leading-[0.95] font-extrabold tracking-tight text-white uppercase sm:text-7xl lg:text-8xl"
+                                        className="text-4xl leading-[0.95] font-extrabold tracking-tight text-white uppercase break-words min-[480px]:text-5xl sm:text-6xl md:text-7xl lg:text-8xl"
                                         style={{ textShadow: "0 4px 40px rgba(0,0,0,0.35)" }}
                                     >
                                         <span
@@ -155,11 +181,11 @@ const HeroSlider = () => {
                                         <span className="block font-black">{slide.solid}</span>
                                     </h1>
 
-                                    <p className="mt-6 max-w-xl text-sm leading-7 text-white/75 sm:text-base sm:leading-8">
+                                    <p className="mt-4 max-w-xl text-sm leading-7 text-white/75 sm:mt-6 sm:text-base sm:leading-8">
                                         {slide.description}
                                     </p>
 
-                                    <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                                    <div className="mt-6 flex flex-col gap-3 sm:mt-8 sm:flex-row">
                                         <Link
                                             href="/studios"
                                             className="inline-flex items-center justify-center rounded-full bg-[#e63946] px-8 py-3.5 text-sm font-semibold text-white shadow-lg shadow-[#e63946]/30 transition-all duration-200 hover:bg-[#ff4757] hover:shadow-xl hover:shadow-[#e63946]/40 active:scale-[0.98]"
@@ -243,9 +269,8 @@ const HeroSlider = () => {
                             aria-selected={i === active}
                             aria-label={`Go to slide ${i + 1}`}
                             onClick={() => swiper?.slideToLoop(i)}
-                            className={`h-1.5 rounded-full transition-all duration-500 ${
-                                i === active ? "w-8 bg-[#e63946]" : "w-4 bg-white/40 hover:bg-white/70"
-                            }`}
+                            className={`h-1.5 rounded-full transition-all duration-500 ${i === active ? "w-8 bg-[#e63946]" : "w-4 bg-white/40 hover:bg-white/70"
+                                }`}
                         />
                     ))}
                 </div>

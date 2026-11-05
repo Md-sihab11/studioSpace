@@ -97,7 +97,6 @@ const StudioDetailsPage = ({ params }: { params: Promise<{ id: string }> }) => {
             try {
                 let found: RemoteStudio | null = null;
 
-                // Primary: single-document endpoint.
                 try {
                     const res = await fetch(
                         `${API_BASE_URL}/studios/${encodeURIComponent(id)}`,
@@ -113,10 +112,8 @@ const StudioDetailsPage = ({ params }: { params: Promise<{ id: string }> }) => {
                         }
                     }
                 } catch {
-                    // Endpoint missing or backend asleep — fall back to the list.
                 }
 
-                // Fallback: find the document in the full list.
                 if (!found) {
                     const res = await fetch(
                         `${API_BASE_URL}/studios`,

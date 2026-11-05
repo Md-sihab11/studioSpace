@@ -51,7 +51,6 @@ const EditStudioPage = () => {
             try {
                 let studio: Studio | null = null;
 
-                // Primary: GET /studios/:id
                 try {
                     const res = await fetch(
                         `${API_BASE_URL}/studios/${encodeURIComponent(id)}`,
@@ -61,16 +60,13 @@ const EditStudioPage = () => {
                     );
 
                     const data = await res.json().catch(() => null);
-                    
 
                     if (res.ok && data?._id) {
                         studio = data as Studio;
                     }
                 } catch {
-                    // Endpoint missing or backend asleep — use the list below.
                 }
 
-                // Fallback: find the document in GET /studios.
                 if (!studio) {
                     const res = await fetch(
                         `${API_BASE_URL}/studios`,
